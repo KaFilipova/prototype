@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { EVENTS, FACULTIES } from '../mock/data'
-import { Crumbs, PageHead, Empty, Field, Notice, fmtDate, FORMAT_LABEL } from '../components/ui'
+import { Crumbs, PageHead, Empty, Notice, Reveal, fmtDate, FORMAT_LABEL } from '../components/ui'
 import { useEventsStore } from '../store/contentStore'
 import { useUiStore } from '../store/uiStore'
 
@@ -30,6 +29,21 @@ function Calendar({ events }) {
       </div>
       <div className="tiny muted" style={{ padding: 12 }}>Грудень 2026</div>
     </div>
+  )
+}
+
+/** Кнопка швидкої реєстрації — відкриває модалку, не ведучи на сторінку події */
+function QuickRegister({ event }) {
+  const openEventModal = useUiStore((s) => s.openEventModal)
+  const isRegistered = useEventsStore((s) => s.isRegistered)
+
+  if (event.past) return null
+  if (isRegistered(event.id)) return <span className="badge badge--ok">✓ Ви зареєстровані</span>
+
+  return (
+    <button className="btn btn--primary btn--sm" onClick={() => openEventModal(event.id)}>
+      Зареєструватися
+    </button>
   )
 }
 
@@ -79,29 +93,32 @@ export function EventsList() {
             <Calendar events={list} />
           ) : (
             <div className="stack">
-              {list.map((e) => (
-                <Link to={`/events/${e.id}`} key={e.id} className="card card--link">
-                  <div className="row">
-                    <div style={{ textAlign: 'center', minWidth: 72 }}>
-                      <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--c-green)' }}>{e.date.slice(8)}</div>
-                      <div className="tiny muted">{fmtDate(e.date).split(' ')[1]}</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 220 }}>
-                      <div className="row" style={{ marginBottom: 6 }}>
-                        <span className="badge">{FORMAT_LABEL[e.format]}</span>
-                        {e.internal && <span className="badge badge--lock">🔒 Закрита</span>}
-                        {e.past && <span className="badge badge--neutral">Архів</span>}
+              {list.map((e, i) => (
+                <Reveal key={e.id} delay={Math.min(i + 1, 5)}>
+                  <div className="card card--link">
+                    <div className="row">
+                      <div style={{ textAlign: 'center', minWidth: 72 }}>
+                        <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--c-green)' }}>{e.date.slice(8)}</div>
+                        <div className="tiny muted">{fmtDate(e.date).split(' ')[1]}</div>
                       </div>
-                      <h3 className="card__title">{e.title}</h3>
-                      <div className="card__meta">
-                        <span>{e.time} ({e.tz})</span>
-                        <span>{e.duration} хв</span>
-                        <span>{e.place}</span>
+                      <div style={{ flex: 1, minWidth: 220 }}>
+                        <div className="row" style={{ marginBottom: 6 }}>
+                          <span className="badge">{FORMAT_LABEL[e.format]}</span>
+                          {e.internal && <span className="badge badge--lock">🔒 Закрита</span>}
+                          {e.past && <span className="badge badge--neutral">Архів</span>}
+                        </div>
+                        <Link to={`/events/${e.id}`}><h3 className="card__title">{e.title}</h3></Link>
+                        <div className="card__meta">
+                          <span>{e.time} ({e.tz})</span>
+                          <span>{e.duration} хв</span>
+                          <span>{e.place}</span>
+                        </div>
                       </div>
+                      <QuickRegister event={e} />
+                      <Link to={`/events/${e.id}`} className="btn btn--ghost btn--sm">Детальніше →</Link>
                     </div>
-                    <span className="btn btn--ghost btn--sm">Детальніше →</span>
                   </div>
-                </Link>
+                </Reveal>
               ))}
             </div>
           )}
@@ -114,26 +131,10 @@ export function EventsList() {
 export function EventPage() {
   const { id } = useParams()
   const e = EVENTS.find((x) => x.id === id)
-  const { register, isRegistered } = useEventsStore()
-  const openModal = useUiStore((s) => s.openModal)
-  const [form, setForm] = useState({ name: '', role: '', email: '', consent: false })
-  const [errors, setErrors] = useState({})
-  const [done, setDone] = useState(false)
+  const isRegistered = useEventsStore((s) => s.isRegistered)
+  const { openModal, openEventModal } = useUiStore()
 
   if (!e) return <Empty title="Подію не знайдено" />
-
-  const submit = (ev) => {
-    ev.preventDefault()
-    const err = {}
-    if (!form.name.trim()) err.name = 'Вкажіть імʼя та прізвище'
-    if (!form.role.trim()) err.role = 'Оберіть професійну роль'
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) err.email = 'Некоректний email'
-    if (!form.consent) err.consent = 'Потрібна згода на обробку даних'
-    setErrors(err)
-    if (Object.keys(err).length) return
-    register(e.id)
-    setDone(true)
-  }
 
   return (
     <>
@@ -170,7 +171,7 @@ export function EventPage() {
           </div>
 
           <aside className="card stack" style={{ position: 'sticky', top: 'calc(var(--header-h) + 16px)' }}>
-            {done || isRegistered(e.id) ? (
+            {isRegistered(e.id) ? (
               <>
                 <Notice kind="ok" icon="✓" title="Участь підтверджено">
                   Ми надіслали лист з посиланням на подію та деталями підключення. Подія зʼявиться в
@@ -180,35 +181,23 @@ export function EventPage() {
                 <Link to="/cabinet" className="btn btn--ghost btn--block">Мої події</Link>
               </>
             ) : (
-              <form onSubmit={submit}>
-                <h3>Реєстрація на подію</h3>
-                <Field label="Імʼя та прізвище" required error={errors.name}>
-                  <input className="input" value={form.name} onChange={(ev) => setForm({ ...form, name: ev.target.value })} />
-                </Field>
-                <Field label="Професійна роль" required error={errors.role}>
-                  <select className="select" value={form.role} onChange={(ev) => setForm({ ...form, role: ev.target.value })}>
-                    <option value="">Оберіть…</option>
-                    <option>Лікар</option>
-                    <option>Фармацевт</option>
-                    <option>Медичний представник</option>
-                    <option>Студент</option>
-                  </select>
-                </Field>
-                <Field label="Email" required error={errors.email}>
-                  <input className="input" type="email" value={form.email} onChange={(ev) => setForm({ ...form, email: ev.target.value })} />
-                </Field>
-                <div className={'field' + (errors.consent ? ' field--error' : '')}>
-                  <label className="checkbox">
-                    <input type="checkbox" checked={form.consent} onChange={(ev) => setForm({ ...form, consent: ev.target.checked })} />
-                    <span className="small">Погоджуюсь з умовами участі та політикою конфіденційності</span>
-                  </label>
-                  {errors.consent && <span className="error-text">⚠ {errors.consent}</span>}
-                </div>
-                <button className="btn btn--primary btn--block">Зареєструватися</button>
-                <button type="button" className="btn btn--ghost btn--block" style={{ marginTop: 8 }} onClick={() => openModal('calendar')}>
+              <>
+                <h3>Участь у події</h3>
+                <p className="small muted">
+                  Реєстрація безкоштовна. Після підтвердження надішлемо лист з посиланням на
+                  підключення.
+                </p>
+                <dl className="kv" style={{ gridTemplateColumns: '90px 1fr' }}>
+                  <dt>Коли</dt><dd className="small">{fmtDate(e.date)}, {e.time}</dd>
+                  <dt>Формат</dt><dd className="small">{FORMAT_LABEL[e.format]}, {e.duration} хв</dd>
+                </dl>
+                <button className="btn btn--primary btn--block" onClick={() => openEventModal(e.id)}>
+                  Зареєструватися
+                </button>
+                <button className="btn btn--ghost btn--block" onClick={() => openModal('calendar')}>
                   Додати в календар
                 </button>
-              </form>
+              </>
             )}
           </aside>
         </div>

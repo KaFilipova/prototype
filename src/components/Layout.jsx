@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore, STATUS, ROLE } from '../store/authStore'
 import { useUiStore, useConsentStore } from '../store/uiStore'
-import { Field } from './ui'
+import { Field, SuccessMark } from './ui'
+import Modal from './Modal'
+import { RegisterForm, LoginForm, RecoverForm } from '../pages/auth/Auth'
+import EventRegisterForm from './EventRegisterForm'
+import { EVENTS } from '../mock/data'
 
 const NAV = [
   { to: '/basics', title: 'Основи' },
@@ -15,7 +19,7 @@ const NAV = [
 
 function Header() {
   const { user, logout } = useAuthStore()
-  const { mobileMenu, toggleMobileMenu } = useUiStore()
+  const { mobileMenu, toggleMobileMenu, openAuth } = useUiStore()
   const nav = useNavigate()
   const authed = user.status !== STATUS.GUEST
 
@@ -48,8 +52,8 @@ function Header() {
             </>
           ) : (
             <>
-              <Link to="/login" className="btn btn--ghost btn--sm">Вхід</Link>
-              <Link to="/register" className="btn btn--primary btn--sm">Реєстрація</Link>
+              <button className="btn btn--ghost btn--sm" onClick={() => openAuth('login')}>Вхід</button>
+              <button className="btn btn--primary btn--sm" onClick={() => openAuth('register')}>Реєстрація</button>
             </>
           )}
           <button className="burger" onClick={() => toggleMobileMenu()} aria-label="Меню">☰</button>
@@ -66,8 +70,8 @@ function Header() {
             <Link to="/cabinet" onClick={() => toggleMobileMenu(false)}>Кабінет</Link>
           ) : (
             <>
-              <Link to="/login" onClick={() => toggleMobileMenu(false)}>Вхід</Link>
-              <Link to="/register" onClick={() => toggleMobileMenu(false)}>Реєстрація</Link>
+              <a href="#login" onClick={(e) => { e.preventDefault(); openAuth('login') }}>Вхід</a>
+              <a href="#register" onClick={(e) => { e.preventDefault(); openAuth('register') }}>Реєстрація</a>
             </>
           )}
         </div>
@@ -122,6 +126,130 @@ function Footer() {
   )
 }
 
+/* ---------- Модалка акаунтів: вхід / реєстрація / відновлення ---------- */
+const AUTH_META = {
+  login: { title: 'Вхід', subtitle: 'Увійдіть, щоб перейти до своїх курсів і збережених матеріалів.' },
+  register: { title: 'Реєстрація фахівця', subtitle: 'Доступ відкривається після перевірки документа, що підтверджує фах.' },
+  recover: { title: 'Відновлення доступу', subtitle: 'Надішлемо посилання для встановлення нового пароля.' },
+}
+
+function AuthModal() {
+  const { authModal, openAuth, closeAuth } = useUiStore()
+  const meta = AUTH_META[authModal] || {}
+
+  return (
+    <Modal
+      open={Boolean(authModal)}
+      onClose={closeAuth}
+      size={authModal === 'register' ? 'md' : 'sm'}
+      title={meta.title}
+      subtitle={meta.subtitle}
+    >
+      {(close) => (
+        <>
+          {authModal === 'login' && <LoginForm onSwitch={openAuth} onDone={close} />}
+          {authModal === 'register' && <RegisterForm onSwitch={openAuth} onDone={close} />}
+          {authModal === 'recover' && <RecoverForm onSwitch={openAuth} onDone={close} />}
+        </>
+      )}
+    </Modal>
+  )
+}
+
+/* ---------- Модалка реєстрації на подію ---------- */
+function EventModal() {
+  const { eventModal, closeEventModal } = useUiStore()
+  const event = EVENTS.find((e) => e.id === eventModal)
+
+  return (
+    <Modal
+      open={Boolean(event)}
+      onClose={closeEventModal}
+      size="sm"
+      title="Реєстрація на подію"
+      subtitle={event?.title}
+    >
+      {(close) => (event ? <EventRegisterForm event={event} onClose={close} /> : null)}
+    </Modal>
+  )
+}
+
+/* ---------- Інші модалки ---------- */
+function Modals() {
+  const { modal, closeModal, toast } = useUiStore()
+  const [sent, setSent] = useState(false)
+  const type = modal?.type
+
+  const handleClose = () => {
+    setSent(false)
+    closeModal()
+  }
+
+  return (
+    <>
+      <Modal
+        open={type === 'report'}
+        onClose={handleClose}
+        size="md"
+        title="Повідомити про неточність"
+        subtitle={modal?.payload?.title}
+      >
+        {(close) =>
+          sent ? (
+            <div className="center">
+              <SuccessMark />
+              <h3>Дякуємо</h3>
+              <p className="small muted">Повідомлення надіслано редакції, ми перевіримо матеріал.</p>
+              <button className="btn btn--ghost" style={{ marginTop: 16 }} onClick={close}>Закрити</button>
+            </div>
+          ) : (
+            <>
+              <Field label="Що саме потребує уточнення?" required>
+                <textarea className="textarea" placeholder="Опишіть неточність і, за можливості, вкажіть джерело" />
+              </Field>
+              <Field label="Email для звʼязку (необовʼязково)">
+                <input className="input" type="email" placeholder="doctor@clinic.ua" />
+              </Field>
+              <button
+                className="btn btn--primary btn--block"
+                onClick={() => { setSent(true); toast('Повідомлення надіслано редакції') }}
+              >
+                Надіслати
+              </button>
+            </>
+          )
+        }
+      </Modal>
+
+      <Modal open={type === 'instruction'} onClose={handleClose} size="sm" title="Інструкцію запитано">
+        {(close) => (
+          <div className="center">
+            <SuccessMark>📩</SuccessMark>
+            <p className="small muted">
+              Запит надіслано. Інструкція з доступу до внутрішнього факультету надійде на вашу
+              корпоративну пошту протягом робочого дня.
+            </p>
+            <button className="btn btn--primary" style={{ marginTop: 16 }} onClick={close}>Зрозуміло</button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal open={type === 'calendar'} onClose={handleClose} size="sm" title="Додати в календар">
+        {(close) => (
+          <div className="stack">
+            <button className="btn btn--ghost btn--block" onClick={() => { toast('Відкрито Google Calendar'); close() }}>
+              Google Calendar
+            </button>
+            <button className="btn btn--ghost btn--block" onClick={() => { toast('Завантажено .ics для Outlook'); close() }}>
+              Outlook / .ics
+            </button>
+          </div>
+        )}
+      </Modal>
+    </>
+  )
+}
+
 function CookieBanner() {
   const { decided, acceptAll, acceptNecessary, save } = useConsentStore()
   const [settings, setSettings] = useState(false)
@@ -169,78 +297,6 @@ function Toasts() {
   )
 }
 
-function Modals() {
-  const { modal, closeModal, toast } = useUiStore()
-  const [sent, setSent] = useState(false)
-  if (!modal) return null
-
-  const close = () => { setSent(false); closeModal() }
-
-  return (
-    <div className="overlay" onClick={close}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        {modal.type === 'report' && (
-          <>
-            <div className="modal__head">
-              <h3 style={{ margin: 0 }}>Повідомити про неточність</h3>
-              <button className="modal__close" onClick={close}>✕</button>
-            </div>
-            {sent ? (
-              <div className="notice notice--ok">
-                <div className="notice__icon">✓</div>
-                <div className="small">Дякуємо. Повідомлення надіслано редакції, ми перевіримо матеріал.</div>
-              </div>
-            ) : (
-              <>
-                <p className="small muted">Матеріал: {modal.payload.title}</p>
-                <Field label="Що саме потребує уточнення?" required>
-                  <textarea className="textarea" placeholder="Опишіть неточність і, за можливості, вкажіть джерело" />
-                </Field>
-                <Field label="Email для звʼязку (необовʼязково)">
-                  <input className="input" type="email" placeholder="doctor@clinic.ua" />
-                </Field>
-                <button className="btn btn--primary btn--block" onClick={() => { setSent(true); toast('Повідомлення надіслано редакції') }}>
-                  Надіслати
-                </button>
-              </>
-            )}
-          </>
-        )}
-
-        {modal.type === 'instruction' && (
-          <>
-            <div className="modal__head">
-              <h3 style={{ margin: 0 }}>Інструкцію запитано</h3>
-              <button className="modal__close" onClick={close}>✕</button>
-            </div>
-            <div className="notice notice--ok">
-              <div className="notice__icon">📩</div>
-              <div className="small">
-                Запит надіслано. Інструкція з доступу до внутрішнього факультету надійде на вашу
-                корпоративну пошту протягом робочого дня.
-              </div>
-            </div>
-            <button className="btn btn--ghost btn--block" style={{ marginTop: 16 }} onClick={close}>Зрозуміло</button>
-          </>
-        )}
-
-        {modal.type === 'calendar' && (
-          <>
-            <div className="modal__head">
-              <h3 style={{ margin: 0 }}>Додати в календар</h3>
-              <button className="modal__close" onClick={close}>✕</button>
-            </div>
-            <div className="stack">
-              <button className="btn btn--ghost btn--block" onClick={() => { toast('Відкрито Google Calendar'); close() }}>Google Calendar</button>
-              <button className="btn btn--ghost btn--block" onClick={() => { toast('Завантажено .ics для Outlook'); close() }}>Outlook / .ics</button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
 function SpecNote() {
   const { pathname } = useLocation()
   const map = {
@@ -264,6 +320,8 @@ function SpecNote() {
 
 export default function Layout() {
   const { user } = useAuthStore()
+  const { pathname } = useLocation()
+
   return (
     <>
       <Header />
@@ -272,13 +330,16 @@ export default function Layout() {
           Внутрішній доступ Укрфарму активний
         </div>
       )}
-      <main>
+      {/* key на маршруті перезапускає анімацію появи сторінки */}
+      <main key={pathname} className="page-enter">
         <Outlet />
       </main>
       <Footer />
       <CookieBanner />
       <Toasts />
       <Modals />
+      <AuthModal />
+      <EventModal />
       <SpecNote />
     </>
   )

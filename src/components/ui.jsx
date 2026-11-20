@@ -1,5 +1,94 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+
+/* ===== Анімація появи при скролі ===== */
+export function Reveal({ children, delay = 0, as: Tag = 'div', className = '', ...rest }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <Tag
+      ref={ref}
+      data-delay={delay || undefined}
+      className={`reveal${visible ? ' is-visible' : ''}${className ? ' ' + className : ''}`}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  )
+}
+
+/* ===== Лічильник з анімацією ===== */
+export function CountUp({ value, duration = 1100 }) {
+  const ref = useRef(null)
+  const [shown, setShown] = useState(0)
+  const target = parseInt(String(value).replace(/\s/g, ''), 10) || 0
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setShown(target)
+      return
+    }
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setShown(target)
+      return
+    }
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return
+      io.disconnect()
+      const start = performance.now()
+      const tick = (now) => {
+        const p = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - p, 3)
+        setShown(Math.round(target * eased))
+        if (p < 1) requestAnimationFrame(tick)
+      }
+      requestAnimationFrame(tick)
+    }, { threshold: 0.4 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [target, duration])
+
+  return <span ref={ref}>{shown.toLocaleString('uk-UA').replace(/,/g, ' ')}</span>
+}
+
+/* ===== Скелетон завантаження ===== */
+export function SkeletonCard() {
+  return (
+    <div className="card" aria-hidden="true">
+      <div className="skeleton skeleton--media" style={{ margin: '-16px -16px 16px' }} />
+      <div className="skeleton skeleton--title" />
+      <div className="skeleton skeleton--text" />
+      <div className="skeleton skeleton--text" style={{ width: '85%' }} />
+      <div className="skeleton skeleton--text" style={{ width: '45%' }} />
+    </div>
+  )
+}
+
+export function SuccessMark({ children = '✓' }) {
+  return <div className="success-mark">{children}</div>
+}
 
 export function Crumbs({ items }) {
   return (

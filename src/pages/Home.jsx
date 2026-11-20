@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FACULTIES, COUNTERS, EVENTS, NEWS, EXPERTS } from '../mock/data'
-import { fmtDate, FORMAT_LABEL } from '../components/ui'
+import { Reveal, CountUp, fmtDate, FORMAT_LABEL } from '../components/ui'
 
 export default function Home() {
   const upcoming = EVENTS.filter((e) => !e.past && !e.internal).slice(0, 3)
@@ -35,8 +35,8 @@ export default function Home() {
             <Link to="/faculties" className="btn btn--ghost btn--sm">Усі факультети →</Link>
           </div>
           <div className="grid grid--3">
-            {FACULTIES.map((f) => (
-              <Link to={`/faculties/${f.id}`} key={f.id} className="card card--link">
+            {FACULTIES.map((f, i) => (
+              <Reveal key={f.id} delay={i + 1} as={Link} to={`/faculties/${f.id}`} className="card card--link">
                 <div className="card__media">{f.cover}</div>
                 <div className="row" style={{ marginBottom: 8 }}>
                   {f.internal ? (
@@ -51,7 +51,7 @@ export default function Home() {
                   <span>{f.modules} модулів</span>
                   <span>{f.qa} Q&A-сесії</span>
                 </div>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -61,11 +61,11 @@ export default function Home() {
       <section className="section section--soft">
         <div className="container">
           <div className="counters">
-            {COUNTERS.map((c) => (
-              <div className="counter" key={c.label}>
-                <div className="counter__value">{c.value}</div>
+            {COUNTERS.map((c, i) => (
+              <Reveal className="counter" key={c.label} delay={i + 1}>
+                <div className="counter__value"><CountUp value={c.value} /></div>
                 <div className="counter__label">{c.label}</div>
-              </div>
+              </Reveal>
             ))}
           </div>
           <p className="tiny muted center" style={{ marginTop: 12 }}>
@@ -85,8 +85,8 @@ export default function Home() {
             <Link to="/events" className="btn btn--ghost btn--sm">Афіша →</Link>
           </div>
           <div className="grid grid--3">
-            {upcoming.map((e) => (
-              <Link to={`/events/${e.id}`} key={e.id} className="card card--link">
+            {upcoming.map((e, i) => (
+              <Reveal key={e.id} delay={i + 1} as={Link} to={`/events/${e.id}`} className="card card--link">
                 <div className="row" style={{ marginBottom: 10 }}>
                   <span className="badge">{FORMAT_LABEL[e.format]}</span>
                   <span className="badge badge--neutral">{fmtDate(e.date)}</span>
@@ -96,7 +96,7 @@ export default function Home() {
                   <span>{e.time} ({e.tz})</span>
                   <span>{e.duration} хв</span>
                 </div>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -113,13 +113,14 @@ export default function Home() {
             <Link to="/experts" className="btn btn--onDeep btn--sm">Склад ради →</Link>
           </div>
           <div className="grid grid--4">
-            {EXPERTS.slice(0, 4).map((x) => (
-              <Link to={`/experts/${x.id}`} key={x.id} className="card" style={{ background: 'rgba(255,255,255,.06)', borderColor: 'rgba(255,255,255,.14)', color: '#fff' }}>
+            {EXPERTS.slice(0, 4).map((x, i) => (
+              <Reveal key={x.id} delay={i + 1} as={Link} to={`/experts/${x.id}`} className="card"
+                style={{ background: 'rgba(255,255,255,.06)', borderColor: 'rgba(255,255,255,.14)', color: '#fff' }}>
                 <div style={{ fontSize: 34 }}>{x.avatar}</div>
                 <h3 className="card__title" style={{ marginTop: 8 }}>{x.name}</h3>
                 <div className="small" style={{ color: '#9FC9BE' }}>{x.specialty}</div>
                 <div className="tiny" style={{ color: '#7FAEA3', marginTop: 6 }}>{x.org}</div>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -136,13 +137,13 @@ export default function Home() {
             <Link to="/news" className="btn btn--ghost btn--sm">Усі новини →</Link>
           </div>
           <div className="grid grid--3">
-            {news.map((n) => (
-              <Link to={`/news/${n.id}`} key={n.id} className="card card--link">
+            {news.map((n, i) => (
+              <Reveal key={n.id} delay={i + 1} as={Link} to={`/news/${n.id}`} className="card card--link">
                 <span className="badge badge--neutral">{n.category}</span>
                 <h3 className="card__title" style={{ marginTop: 10 }}>{n.title}</h3>
                 <p className="small muted">{n.excerpt}</p>
                 <div className="card__meta"><span>{fmtDate(n.date)}</span></div>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>

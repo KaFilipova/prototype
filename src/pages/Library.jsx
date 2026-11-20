@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { MATERIALS, SPECIALTIES, MATERIAL_TYPES, TOPICS } from '../mock/data'
-import { Crumbs, PageHead, Empty, Notice, Disclaimer, QrBlock, fmtDate } from '../components/ui'
+import { Crumbs, PageHead, Empty, Notice, Disclaimer, QrBlock, Reveal, SkeletonCard, fmtDate } from '../components/ui'
 import { useLibraryStore } from '../store/contentStore'
 import { useAuthStore, STATUS } from '../store/authStore'
 import { useUiStore } from '../store/uiStore'
@@ -31,6 +32,14 @@ function SaveButton({ id, small }) {
 export function LibraryList() {
   const { filters, setQuery, toggleFilter, setSort, resetFilters, results, activeCount } = useLibraryStore()
   const list = results()
+
+  // Імітація підвантаження: показує скелетони так само, як це буде з реальним API
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    setLoading(true)
+    const t = setTimeout(() => setLoading(false), 320)
+    return () => clearTimeout(t)
+  }, [filters])
 
   const Group = ({ title, group, options }) => (
     <div className="filter-group">
@@ -87,7 +96,11 @@ export function LibraryList() {
               </select>
             </div>
 
-            {list.length === 0 ? (
+            {loading ? (
+              <div className="grid grid--2">
+                {Array.from({ length: 4 }, (_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : list.length === 0 ? (
               <Empty
                 icon="📭"
                 title="Нічого не знайдено"
@@ -96,20 +109,22 @@ export function LibraryList() {
               />
             ) : (
               <div className="grid grid--2">
-                {list.map((m) => (
-                  <Link to={`/library/${m.id}`} key={m.id} className="card card--link">
+                {list.map((m, i) => (
+                  <Reveal key={m.id} delay={Math.min(i + 1, 5)} className="card card--link">
                     <div className="row" style={{ marginBottom: 10 }}>
                       <span className="badge">{TYPE_LABEL[m.type]}</span>
                       <div className="spacer" />
                       <SaveButton id={m.id} />
                     </div>
-                    <h3 className="card__title">{m.title}</h3>
-                    <p className="small muted">{m.excerpt}</p>
-                    <div className="card__meta">
-                      <span>{m.readTime} хв</span>
-                      <span>Перевірено {fmtDate(m.reviewedAt)}</span>
-                    </div>
-                  </Link>
+                    <Link to={`/library/${m.id}`}>
+                      <h3 className="card__title">{m.title}</h3>
+                      <p className="small muted">{m.excerpt}</p>
+                      <div className="card__meta">
+                        <span>{m.readTime} хв</span>
+                        <span>Перевірено {fmtDate(m.reviewedAt)}</span>
+                      </div>
+                    </Link>
+                  </Reveal>
                 ))}
               </div>
             )}

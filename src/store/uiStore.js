@@ -11,6 +11,17 @@ export const useUiStore = create((set, get) => ({
   openModal: (type, payload = {}) => set({ modal: { type, payload } }),
   closeModal: () => set({ modal: null }),
 
+  // Форми акаунтів відкриваються в модалці поверх поточної сторінки.
+  // Маршрути /login, /register, /recover лишаються робочими для прямих посилань і листів.
+  authModal: null, // 'login' | 'register' | 'recover'
+  openAuth: (mode) => set({ authModal: mode, mobileMenu: false }),
+  closeAuth: () => set({ authModal: null }),
+
+  // Реєстрація на подію — теж у модалці
+  eventModal: null, // id події
+  openEventModal: (id) => set({ eventModal: id }),
+  closeEventModal: () => set({ eventModal: null }),
+
   toasts: [],
   toast: (text) => {
     const id = ++toastId

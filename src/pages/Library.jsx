@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { MATERIALS, SPECIALTIES, MATERIAL_TYPES, TOPICS } from '../mock/data'
 import { Crumbs, PageHead, Empty, Notice, Disclaimer, QrBlock, Reveal, SkeletonCard, fmtDate } from '../components/ui'
+import MoleculeBlock from '../components/MoleculeBlock'
 import { useLibraryStore } from '../store/contentStore'
 import { useAuthStore, STATUS } from '../store/authStore'
 import { useUiStore } from '../store/uiStore'
@@ -184,6 +185,14 @@ export function MaterialPage() {
               Повний текст матеріалу редагується в CMS і може містити таблиці, зображення та
               вбудовані відеофрагменти.
             </p>
+
+            {/* Інтерактивний блок підключається до матеріалів з відповідною темою */}
+            {(m.topics.includes('pharm') || m.topics.includes('ecs')) && (
+              <>
+                <h2>Просторова будова</h2>
+                <MoleculeBlock />
+              </>
+            )}
 
             {m.sources.length > 0 && (
               <>

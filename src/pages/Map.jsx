@@ -12,6 +12,7 @@ const GROUPS = [
       { to: '/faculties/ukrfarm', title: 'Внутрішній факультет', f: 'F-11' },
       { to: '/library', title: 'Бібліотека — каталог', f: 'F-12' },
       { to: '/library/m1', title: 'Сторінка матеріалу', f: 'F-13, F-14, F-15' },
+      { to: '/library/m4', title: '3D-модель ТГК/КБД (опція)', f: 'опція, 16–24 год' },
       { to: '/events', title: 'Афіша подій', f: 'F-17' },
       { to: '/events/e1', title: 'Сторінка події + реєстрація', f: 'F-18, F-19' },
       { to: '/news', title: 'Стрічка новин', f: 'F-21' },

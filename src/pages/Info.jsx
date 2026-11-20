@@ -94,7 +94,7 @@ export function ExpertProfile() {
         { title: x.name },
       ]} />
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container grid" style={{ gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
+        <div className="container with-aside--left">
           <div className="card center">
             <div style={{ fontSize: 72 }}>{x.avatar}</div>
             <h3 style={{ marginTop: 12 }}>{x.name}</h3>
@@ -161,7 +161,7 @@ export function Contacts() {
       <Crumbs items={[{ title: t('common.home'), to: '/' }, { title: t('contacts.title') }]} />
       <PageHead title={t('contacts.title')} subtitle={t('contacts.lead')} />
       <section className="section">
-        <div className="container grid" style={{ gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+        <div className="container with-aside" style={{ '--aside': '340px' }}>
           <div className="card">
             {sent ? (
               <div className="center">

@@ -57,6 +57,7 @@ function Header() {
   const authed = user.status !== STATUS.GUEST
 
   return (
+    <>
     <header className="header">
       <div className="container header__inner">
         <Link to="/" className="logo" onClick={() => toggleMobileMenu(false)}>
@@ -94,7 +95,10 @@ function Header() {
           <button className="burger" onClick={() => toggleMobileMenu()} aria-label={t('common.menu')}>☰</button>
         </div>
       </div>
+    </header>
 
+      {/* Меню рендериться ПОЗА <header>: backdrop-filter на хедері створює
+          containing block для position: fixed, і меню стискалося до висоти хедера. */}
       {mobileMenu && (
         <div className="mobile-menu">
           {NAV.map((n) => (
@@ -102,7 +106,15 @@ function Header() {
           ))}
           <Link to="/search" onClick={() => toggleMobileMenu(false)}>{t('common.search')}</Link>
           {authed ? (
-            <Link to="/cabinet" onClick={() => toggleMobileMenu(false)}>{t('common.cabinet')}</Link>
+            <>
+              <Link to="/cabinet" onClick={() => toggleMobileMenu(false)}>{t('common.cabinet')}</Link>
+              <a
+                href="#logout"
+                onClick={(e) => { e.preventDefault(); toggleMobileMenu(false); logout(); nav('/') }}
+              >
+                {t('common.logout')}
+              </a>
+            </>
           ) : (
             <>
               <a href="#login" onClick={(e) => { e.preventDefault(); openAuth('login') }}>{t('common.login')}</a>
@@ -115,7 +127,7 @@ function Header() {
           </div>
         </div>
       )}
-    </header>
+    </>
   )
 }
 
@@ -299,7 +311,7 @@ function CookieBanner() {
             <strong>{t('cookie.title')}</strong> {t('cookie.text')}{' '}
             <Link to="/privacy" style={{ color: 'var(--accent-text)' }}>{t('cookie.policy')}</Link>.
           </div>
-          <div className="row" style={{ flexWrap: 'nowrap' }}>
+          <div className="row cookie__actions">
             <button className="btn btn--ghost btn--sm" onClick={() => setSettings(true)}>{t('cookie.settings')}</button>
             <button className="btn btn--ghost btn--sm" onClick={acceptNecessary}>{t('cookie.necessary')}</button>
             <button className="btn btn--primary btn--sm" onClick={acceptAll}>{t('cookie.acceptAll')}</button>

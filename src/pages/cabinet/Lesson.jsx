@@ -8,7 +8,7 @@ function VideoTab() {
   const { t, tr } = useI18n()
   const { speed, setSpeed } = useCourseStore()
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+    <div className="with-aside" style={{ '--aside': '300px', gap: 'var(--sp-5)' }}>
       <div className="player">
         <div className="player__stage">
           <div className="center">
@@ -66,7 +66,7 @@ function AudioTab() {
 function PdfTab() {
   const { t } = useI18n()
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1fr 280px', gap: 24, alignItems: 'start' }}>
+    <div className="with-aside" style={{ '--aside': '280px', gap: 'var(--sp-5)' }}>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ background: 'var(--bg-soft)', padding: 10, borderBottom: '1px solid var(--border)' }} className="row small">
           <span>📄 {LESSON.pdf.name}</span>

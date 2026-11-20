@@ -152,7 +152,7 @@ export function EventPage() {
       ]} />
 
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container grid" style={{ gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }}>
+        <div className="container with-aside" style={{ '--aside': '380px' }}>
           <div>
             <div className="row" style={{ marginBottom: 12 }}>
               <span className="badge">{fmtFormat(e.format)}</span>
@@ -181,7 +181,7 @@ export function EventPage() {
             )}
           </div>
 
-          <aside className="card stack" style={{ position: 'sticky', top: 'calc(var(--header-h) + 16px)' }}>
+          <aside className="card stack aside-sticky">
             {isRegistered(e.id) ? (
               <>
                 <Notice kind="ok" icon="✓" title={t('events.confirmTitle')}>{t('events.confirmText')}</Notice>
@@ -194,7 +194,7 @@ export function EventPage() {
               <>
                 <h3>{t('events.participation')}</h3>
                 <p className="small muted">{t('events.participationText')}</p>
-                <dl className="kv" style={{ gridTemplateColumns: '90px 1fr' }}>
+                <dl className="kv kv--narrow">
                   <dt>{t('events.when')}</dt><dd className="small">{fmtDate(e.date)}, {e.time}</dd>
                   <dt>{t('events.format')}</dt><dd className="small">{fmtFormat(e.format)}, {e.duration} {t('common.min')}</dd>
                 </dl>

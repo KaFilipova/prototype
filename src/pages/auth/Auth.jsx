@@ -233,8 +233,8 @@ function AuthShell({ title, subtitle, children, aside }) {
       <Crumbs items={[{ title: t('common.home'), to: '/' }, { title }]} />
       <section className="section" style={{ paddingTop: 0 }}>
         <div
-          className="container grid"
-          style={{ gridTemplateColumns: aside ? '1fr 340px' : '1fr', gap: 32, maxWidth: aside ? 1200 : 560, alignItems: 'start' }}
+          className={'container ' + (aside ? 'with-aside' : '')}
+          style={{ '--aside': '340px', maxWidth: aside ? 1200 : 560 }}
         >
           <div className="card">
             <h1 style={{ fontSize: 30 }}>{title}</h1>

@@ -37,6 +37,7 @@ export function LibraryList() {
   const { filters, setQuery, toggleFilter, setSort, resetFilters, results, activeCount } = useLibraryStore()
   const list = results()
 
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   useEffect(() => {
     setLoading(true)
@@ -68,7 +69,7 @@ export function LibraryList() {
 
       <section className="section">
         <div className="container grid grid--sidebar">
-          <aside className="filters">
+          <aside className={'filters' + (filtersOpen ? ' filters--open' : '')}>
             <h4>
               {t('library.filters')}
               {activeCount() > 0 && (
@@ -77,15 +78,28 @@ export function LibraryList() {
                 </button>
               )}
             </h4>
-            <input
-              className="input"
-              placeholder={t('library.keyword')}
-              value={filters.q}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <Group title={t('library.specialty')} group="specialties" options={SPECIALTIES} />
-            <Group title={t('library.type')} group="types" options={MATERIAL_TYPES} />
-            <Group title={t('library.topic')} group="topics" options={TOPICS} />
+
+            {/* На планшеті й телефоні фільтри згорнуті за кнопкою */}
+            <button
+              className="btn btn--ghost btn--sm btn--block filters__toggle"
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+            >
+              {filtersOpen ? '▲' : '▼'} {t('library.filters')}
+              {activeCount() > 0 ? ` (${activeCount()})` : ''}
+            </button>
+
+            <div className="filters__body">
+              <input
+                className="input"
+                placeholder={t('library.keyword')}
+                value={filters.q}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <Group title={t('library.specialty')} group="specialties" options={SPECIALTIES} />
+              <Group title={t('library.type')} group="types" options={MATERIAL_TYPES} />
+              <Group title={t('library.topic')} group="topics" options={TOPICS} />
+            </div>
           </aside>
 
           <div>
@@ -167,7 +181,7 @@ export function MaterialPage() {
       ]} />
 
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container grid" style={{ gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'start' }}>
+        <div className="container with-aside">
           <article className="prose">
             <div className="row" style={{ marginBottom: 12 }}>
               <span className="badge">{tr(type)}</span>
@@ -215,7 +229,7 @@ export function MaterialPage() {
             )}
           </article>
 
-          <aside className="stack" style={{ position: 'sticky', top: 'calc(var(--header-h) + 16px)' }}>
+          <aside className="stack aside-sticky">
             <div className="card">
               <h4>{t('library.checkTitle')}</h4>
               <dl className="kv">

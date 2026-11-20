@@ -82,7 +82,7 @@ export default function Course() {
       <PageHead title={tr(COURSE)} subtitle={tr(COURSE, 'description')} />
 
       <section className="section">
-        <div className="container grid" style={{ gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'start' }}>
+        <div className="container with-aside" style={{ '--aside': '360px' }}>
           <div>
             <div className="card" style={{ marginBottom: 24 }}>
               <div className="row" style={{ marginBottom: 10 }}>
@@ -138,11 +138,11 @@ export default function Course() {
             <AskExpert />
           </div>
 
-          <aside className="stack" style={{ position: 'sticky', top: 'calc(var(--header-h) + 16px)' }}>
+          <aside className="stack aside-sticky">
             <div className="card">
               <h4>{t('course.nextQa')}</h4>
               <p className="small muted" style={{ marginBottom: 12 }}>{tr(qaEvent)}</p>
-              <dl className="kv" style={{ gridTemplateColumns: '90px 1fr' }}>
+              <dl className="kv kv--narrow">
                 <dt>{t('events.when')}</dt><dd className="small">{fmtDate(qaEvent.date)}, {qaEvent.time}</dd>
                 <dt>{t('events.format')}</dt><dd className="small">Zoom, 60 {t('common.min')}</dd>
               </dl>

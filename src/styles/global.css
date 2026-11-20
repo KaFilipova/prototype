@@ -2,7 +2,7 @@
 :root {
   --c-deep:      #022622;
   --c-green:     #00AF5F;
-  --c-green-600: #009A53;
+  --c-green-600: #00C76C;
   --c-mint:      #37DB89;
   --c-mint-100:  #C5F9D1;
   --c-white:     #FFFFFF;
@@ -17,7 +17,7 @@
   --text-muted:  #5A736D;
   --text-invert: #FFFFFF;
   --danger:      #C0392B;
-  --warning:     #B7791F;
+  --warning:     #9C6514;
   --warning-bg:  #FEF6E7;
 
   --r-sm: 8px;
@@ -38,7 +38,7 @@
   --font: 'Google Sans', 'Google Sans Text', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* похідні токени, які відрізняються в темній темі */
-  --accent-text:  #00884A;
+  --accent-text:  #00753D;  /* 5.81:1 на білому, 4.94:1 на мʼятному */
   --badge-bg:     var(--c-mint-100);
   --badge-text:   #0A3B2A;
   --header-bg:    rgba(255, 255, 255, .92);
@@ -130,7 +130,7 @@ p  { margin: 0 0 var(--sp-3); }
   white-space: nowrap;
 }
 .btn:focus-visible { outline: 3px solid var(--c-mint); outline-offset: 2px; }
-.btn--primary { background: var(--c-green); color: #fff; }
+.btn--primary { background: var(--c-green); color: var(--c-deep); }
 .btn--primary:hover { background: var(--c-green-600); }
 .btn--ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn--ghost:hover { border-color: var(--c-green); color: var(--accent-text); }
@@ -231,7 +231,7 @@ p  { margin: 0 0 var(--sp-3); }
 .filters h4 { display: flex; align-items: center; justify-content: space-between; }
 .filter-group { border-top: 1px solid var(--border-soft); padding-top: var(--sp-3); margin-top: var(--sp-3); }
 .filter-group__title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: var(--sp-2); }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 14px; }
 .chip:hover { border-color: var(--c-green); }
 .chip--on { background: var(--c-deep); border-color: var(--c-deep); color: #fff; }
 .chips { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
@@ -310,31 +310,23 @@ p  { margin: 0 0 var(--sp-3); }
 .qr-box__code { width: 62px; height: 62px; background: repeating-conic-gradient(var(--c-deep) 0 25%, var(--c-white) 0 50%) 0 0/12px 12px; border-radius: 6px; flex: none; }
 .spec-note { position: fixed; left: var(--sp-4); bottom: var(--sp-4); z-index: 70; font-size: 12px; background: var(--c-deep); color: var(--c-mint); padding: 6px 12px; border-radius: var(--r-pill); opacity: .85; }
 
+/* ===== Макети «контент + бічна колонка» =====
+   Раніше ці сітки задавались інлайн у JSX, через що медіазапити їх не перебивали
+   і на телефоні лишалось дві колонки. Тепер це класи. */
+.with-aside {
+  display: grid;
+  grid-template-columns: 1fr var(--aside, 320px);
+  gap: var(--sp-6);
+  align-items: start;
+}
+.with-aside--left { grid-template-columns: var(--aside, 300px) 1fr; }
+.aside-sticky { position: sticky; top: calc(var(--header-h) + 16px); }
+.kv--narrow { grid-template-columns: 90px 1fr; }
+
+/* Кнопка фільтрів — тільки на планшеті й телефоні */
+.filters__toggle { display: none; }
+
 /* ===== Responsive ===== */
-@media (max-width: 1024px) {
-  .grid--4 { grid-template-columns: repeat(2, 1fr); }
-  .grid--sidebar { grid-template-columns: 1fr; }
-  .filters { position: static; }
-  .footer__cols { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 820px) {
-  .nav { display: none; }
-  .burger { display: block; }
-  .header__actions .btn--ghost { display: none; }
-  .mobile-menu { display: block; position: fixed; inset: var(--header-h) 0 0; background: var(--bg); z-index: 39; padding: var(--sp-4); overflow: auto; }
-  .mobile-menu a { display: block; padding: 14px var(--sp-3); border-bottom: 1px solid var(--border-soft); font-weight: 600; }
-  .grid--3, .grid--2, .counters { grid-template-columns: 1fr; }
-  .section { padding: var(--sp-6) 0; }
-  .cookie { flex-direction: column; align-items: stretch; }
-  .kv { grid-template-columns: 1fr; gap: 2px 0; }
-  .kv dd { margin-bottom: 10px; }
-  .cal__day { min-height: 62px; font-size: 11px; }
-}
-@media (max-width: 560px) {
-  .grid--4 { grid-template-columns: 1fr; }
-  .footer__cols { grid-template-columns: 1fr; }
-  .hero { padding: var(--sp-6) 0; }
-}
 
 /* ==========================================================================
    АНІМАЦІЇ
@@ -493,7 +485,7 @@ p  { margin: 0 0 var(--sp-3); }
 
 .spinner {
   width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+  border: 2px solid currentColor; border-top-color: transparent; opacity: .8;
   animation: spin .7s linear infinite;
 }
 
@@ -523,11 +515,6 @@ p  { margin: 0 0 var(--sp-3); }
   padding: var(--sp-4); background: var(--bg-soft);
 }
 .mol-ph__art { width: 200px; flex: none; opacity: .75; }
-@media (max-width: 560px) {
-  .mol-ph { flex-direction: column; align-items: flex-start; }
-  .mol-ph__art { width: 160px; }
-  .mol__stage { aspect-ratio: 1/1; }
-}
 
 /* ===== Перемикачі теми і мови ===== */
 .switcher { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: var(--r-pill); background: var(--bg-soft); border: 1px solid var(--border); }
@@ -555,11 +542,6 @@ p  { margin: 0 0 var(--sp-3); }
   background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(183,121,31,.3);
 }
 
-@media (max-width: 820px) {
-  .header__actions .switcher, .header__actions .theme-toggle { display: none; }
-  .mobile-menu .switcher, .mobile-menu .theme-toggle { display: inline-flex; }
-  .mobile-menu__tools { display: flex; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-3) 0; }
-}
 
 /* ===== Точкові правки темної теми =====
    Елементи, що спираються на --c-deep, у темній темі зливалися б із фоном. */
@@ -586,9 +568,207 @@ p  { margin: 0 0 var(--sp-3); }
   .btn:hover, .card--link:hover { transform: none !important; }
 }
 
-/* Модалка на мобільному — як нижній лист */
-@media (max-width: 560px) {
-  .overlay { align-items: flex-end; padding: 0; }
-  .modal { width: 100% !important; max-height: 92vh; border-radius: var(--r-lg) var(--r-lg) 0 0; animation: sheetUp var(--t-mid) var(--ease-out) both; }
-  .modal--out { animation: modalOut var(--t-fast) var(--ease-in) both; }
+
+/* ==========================================================================
+   АДАПТИВ
+   Брейкпоінти, від більшого до меншого:
+   1200  десктоп-вузький      1024  планшет-ландшафт (iPad Pro, 1024×1366)
+    900  планшет-портрет      760  мобільне меню, великий телефон
+    600  телефон              380  малий телефон (iPhone SE)
+   Перевіряти: 1440 · 1024 · 834 · 768 · 430 · 375 і ландшафт телефона.
+   ========================================================================== */
+
+@media (max-width: 1200px) {
+  :root { --maxw: 1040px; }
 }
+
+/* --- Планшет-ландшафт --- */
+@media (max-width: 1024px) {
+  :root { --header-h: 64px; }
+  .grid--4 { grid-template-columns: repeat(2, 1fr); }
+  .grid--sidebar { grid-template-columns: 1fr; }
+  .with-aside,
+  .with-aside--left { grid-template-columns: 1fr; gap: var(--sp-5); }
+  .aside-sticky { position: static; }
+  .footer__cols { grid-template-columns: 1fr 1fr; }
+  .section { padding: var(--sp-6) 0; }
+
+  /* Фільтри бібліотеки згортаються в панель із кнопкою */
+  .filters { position: static; padding: var(--sp-3); }
+  .filters__toggle { display: inline-flex; }
+  .filters__body { display: none; }
+  .filters--open .filters__body { display: block; animation: accBody var(--t-mid) var(--ease-out) both; }
+}
+
+/* --- Планшет-портрет --- */
+@media (max-width: 900px) {
+  .grid--3 { grid-template-columns: repeat(2, 1fr); }
+  .counters { grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+  .counter { padding: var(--sp-4); }
+  .counter__value { font-size: 30px; }
+  .prose { max-width: none; }
+}
+
+/* --- Мобільне меню, великий телефон --- */
+/* --- Хедер: головне меню ховається в бургер раніше за решту сітки.
+       Повний рядок (логотип + 6 пунктів + перемикачі + кнопки) потребує ~1220px,
+       тому нижче цього — бургер. --- */
+@media (max-width: 1100px) {
+  .nav { display: none; }
+  .burger { display: block; }
+  .header__actions .btn--ghost,
+  .header__actions .switcher,
+  .header__actions .theme-toggle { display: none; }
+
+  .mobile-menu {
+    display: block; position: fixed; inset: var(--header-h) 0 0;
+    background: var(--bg); z-index: 39; padding: var(--sp-4);
+    overflow: auto; overscroll-behavior: contain;
+    padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom));
+  }
+  .mobile-menu a { display: block; padding: 15px var(--sp-3); border-bottom: 1px solid var(--border-soft); font-weight: 600; }
+  .mobile-menu .switcher,
+  .mobile-menu .theme-toggle { display: inline-flex; }
+  .mobile-menu__tools { display: flex; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-3) 0; }
+}
+
+@media (max-width: 760px) {
+  .grid--2 { grid-template-columns: 1fr; }
+  .kv, .kv--narrow { grid-template-columns: 1fr; gap: 2px 0; }
+  .kv dd { margin-bottom: 10px; }
+  .cookie { flex-direction: column; align-items: stretch; }
+  .section-head { align-items: flex-start; }
+  .cal__day { min-height: 68px; font-size: 11px; padding: 4px; }
+  .cal__ev { font-size: 10px; padding: 2px 4px; }
+  .tabs { margin-left: calc(var(--sp-4) * -1); margin-right: calc(var(--sp-4) * -1); padding: 0 var(--sp-4); }
+}
+
+/* --- Телефон --- */
+@media (max-width: 600px) {
+  :root { --sp-7: 32px; --sp-8: 40px; }
+  .container { padding-left: max(var(--sp-4), env(safe-area-inset-left));
+               padding-right: max(var(--sp-4), env(safe-area-inset-right)); }
+
+  .grid--3, .grid--4, .counters, .footer__cols { grid-template-columns: 1fr; }
+  .hero { padding: var(--sp-6) 0; }
+  h1 { font-size: 27px; }
+  h2 { font-size: 22px; }
+
+  /* Модалка відкривається як нижній лист */
+  .overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    width: 100% !important; max-height: 92vh;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    padding-bottom: calc(var(--sp-5) + env(safe-area-inset-bottom));
+    animation: sheetUp var(--t-mid) var(--ease-out) both;
+  }
+  .modal--out { animation: modalOut var(--t-fast) var(--ease-in) both; }
+  .modal__body { max-height: calc(92vh - 170px); }
+
+  .cookie { left: var(--sp-3); right: var(--sp-3); bottom: calc(var(--sp-3) + env(safe-area-inset-bottom)); }
+  .toast-wrap { left: var(--sp-3); right: var(--sp-3); top: auto; bottom: calc(var(--sp-3) + env(safe-area-inset-bottom)); }
+  .toast { max-width: none; }
+  .spec-note { display: none; }
+
+  .mol-ph { flex-direction: column; align-items: flex-start; }
+  .mol-ph__art { width: 160px; }
+  .mol__stage { aspect-ratio: 1/1; min-height: 300px; }
+
+  /* Таблиці адмінки гортаються горизонтально, підказка про це — тінню */
+  .table { min-width: 560px; }
+
+  .counter { display: flex; align-items: center; gap: var(--sp-3); text-align: left; }
+  .counter__value { font-size: 28px; min-width: 76px; }
+  .counter__label { margin-top: 0; }
+}
+
+/* --- Малий телефон --- */
+@media (max-width: 380px) {
+  .btn { padding: 10px 16px; font-size: 14px; }
+  .logo span:last-child { font-size: 16px; }
+  .chips { gap: 6px; }
+  h1 { font-size: 24px; }
+}
+
+/* --- Телефон у ландшафті: хедер не має з'їдати пів екрана --- */
+@media (max-height: 460px) and (orientation: landscape) {
+  .header { position: static; }
+  .mobile-menu { inset: 0; }
+  .hero { padding: var(--sp-5) 0; }
+}
+
+/* --- Сенсорні екрани: збільшуємо цілі дотику до ~44px --- */
+@media (hover: none) and (pointer: coarse) {
+  .chip { padding: 9px 14px; }
+  .btn--sm { padding: 10px 16px; }
+  .btn--link { padding: 6px 0; }
+  .tabs button { padding: 13px 16px; }
+  .chapter { padding: 13px var(--sp-3); }
+  .modal__close { width: 40px; height: 40px; }
+  .theme-toggle { width: 42px; height: 42px; }
+  .switcher button { padding: 8px 12px; }
+  .card--link:hover { transform: none; box-shadow: none; }
+  .chapter:hover { padding-left: var(--sp-3); }
+}
+
+/* ==========================================================================
+   ПРАВКИ ЗА ПІДСУМКАМИ АДАПТИВНОГО АУДИТУ
+   (responsive-check.mjs: 9 вьюпортів × 17 сторінок у реальному Chrome)
+   ========================================================================== */
+
+/* Цілі дотику на планшеті й телефоні. Не покладаємось на pointer: coarse —
+   у ряді середовищ він не спрацьовує, тому прив'язуємось до ширини. */
+@media (max-width: 1024px) {
+  .tabs button { padding: 13px 16px; min-height: 44px; }
+  .chip { min-height: 38px; padding: 9px 14px; }
+  .btn--sm { min-height: 40px; }
+  .btn--link { display: inline-flex; align-items: center; min-height: 36px; }
+  .modal__close { width: 40px; height: 40px; }
+  .filters__toggle { min-height: 44px; }
+}
+
+/* Телефон: у хедері лишається тільки логотип і бургер.
+   Вхід, реєстрація, кабінет і вихід живуть у бургер-меню — інакше
+   рядок хедера не вміщається вже на 390px і з'являється горизонтальний скрол. */
+@media (max-width: 600px) {
+  .header__inner { gap: var(--sp-3); }
+  .header__actions .btn { display: none; }
+  .logo { font-size: 16px; gap: 8px; }
+  .logo__mark { width: 28px; height: 28px; font-size: 15px; }
+}
+
+@media (max-width: 380px) {
+  .logo span:last-child { font-size: 15px; }
+  .badge { font-size: 11.5px; padding: 3px 8px; }
+}
+
+/* Дрібні керівні елементи: кнопки швидкості плеєра і перемикачі мови/теми */
+@media (max-width: 1024px) {
+  .speed button { min-height: 36px; padding: 8px 12px; }
+  .switcher button { min-height: 36px; padding: 8px 12px; }
+  .player__bar .btn--sm { min-height: 40px; }
+}
+
+/* Кнопки cookie-банера: на десктопі в рядок, на телефоні переносяться,
+   інакше третя кнопка обрізається (flex стискає коробку, а текст — ні). */
+.cookie__actions { flex-wrap: nowrap; }
+@media (max-width: 760px) {
+  .cookie__actions { flex-wrap: wrap; }
+  .cookie__actions .btn { flex: 1 1 auto; }
+}
+
+/* Календар: клітинка сітки за замовчуванням має min-width: auto, тому довга
+   назва події розтягувала колонку і накривала сусідні дні. */
+.cal__day { min-width: 0; overflow: hidden; }
+.cal__day > a { display: block; min-width: 0; }
+
+/* ==========================================================================
+   КОНТРАСТ (WCAG 2.1 AA) — за підсумками contrast-check.mjs
+   Білий текст на фірмовому #00AF5F дає лише 2.88:1 при нормі 4.5:1.
+   Зелений лишаємо як у брендбуці, а напис робимо фірмовим темним #022622 —
+   це 5.60:1 і обидва кольори з палітри брендбука.
+   ========================================================================== */
+.btn--primary:focus-visible { outline-color: var(--c-deep); }
+:root[data-theme="dark"] .btn--primary { color: #04201C; }
+:root[data-theme="dark"] .card__media { color: var(--text); }
+:root[data-theme="dark"] .badge--warn { background: rgba(232,180,94,.16); color: #E8B45E; }

@@ -143,23 +143,35 @@ export const MOLECULES = {
   thc: {
     id: 'thc',
     ...buildTHC(),
+    name: 'Δ9-ТГК',
     title: 'Δ9-тетрагідроканабінол (ТГК)',
     note: 'Трициклічна злита система: ароматичне кільце, піранове кільце з киснем і циклогексенове кільце жорстко зчеплені. Саме ця жорстка геометрія забезпечує зв’язування з CB1-рецептором і психоактивність.',
+    en: {
+      name: 'Δ9-THC',
+      title: 'Δ9-tetrahydrocannabinol (THC)',
+      note: 'A fused tricyclic system: the aromatic ring, the oxygen-containing pyran ring and the cyclohexene ring are rigidly locked together. That rigid geometry is what enables CB1 receptor binding and psychoactivity.',
+    },
   },
   cbd: {
     id: 'cbd',
     ...buildCBD(),
+    name: 'КБД',
     title: 'Канабідіол (КБД)',
     note: 'Той самий склад C₂₁H₃₀O₂, але піранове кільце розімкнене: два фрагменти з’єднані одинарним звʼязком з вільним обертанням. Молекула гнучка, спорідненість до CB1 низька — звідси відсутність психоактивного ефекту.',
+    en: {
+      name: 'CBD',
+      title: 'Cannabidiol (CBD)',
+      note: 'The same C₂₁H₃₀O₂ composition, but the pyran ring is open: the two fragments are joined by a single bond that rotates freely. The molecule is flexible, its CB1 affinity is low — hence the absence of a psychoactive effect.',
+    },
   },
 }
 
 export const GROUPS = [
-  { id: 'aromatic', title: 'Ароматичне кільце', color: '#37DB89' },
-  { id: 'phenol', title: 'Гідроксильні групи', color: '#FF8A6B' },
-  { id: 'pyran', title: 'Піранове кільце', color: '#5BC8FF', onlyIn: 'thc' },
-  { id: 'terpene', title: 'Терпенова частина', color: '#C8A2FF' },
-  { id: 'pentyl', title: 'Пентильний ланцюг', color: '#FFD166' },
+  { id: 'aromatic', title: 'Ароматичне кільце', color: '#37DB89', en: { title: 'Aromatic ring' } },
+  { id: 'phenol', title: 'Гідроксильні групи', color: '#FF8A6B', en: { title: 'Hydroxyl groups' } },
+  { id: 'pyran', title: 'Піранове кільце', color: '#5BC8FF', onlyIn: 'thc', en: { title: 'Pyran ring' } },
+  { id: 'terpene', title: 'Терпенова частина', color: '#C8A2FF', en: { title: 'Terpene moiety' } },
+  { id: 'pentyl', title: 'Пентильний ланцюг', color: '#FFD166', en: { title: 'Pentyl chain' } },
 ]
 
 /**

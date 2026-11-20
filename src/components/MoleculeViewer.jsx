@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { MOLECULES, GROUPS } from '../mock/molecules'
+import { useI18n } from '../i18n'
 
 /**
  * 3D-вʼюер молекул на Three.js.
@@ -14,6 +15,7 @@ const BOND_COLOR = 0x8aa39c
 const DIM = 0.12
 
 export default function MoleculeViewer() {
+  const { t, tr } = useI18n()
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
   const [mol, setMol] = useState('thc')
@@ -190,20 +192,20 @@ export default function MoleculeViewer() {
               className={'chip' + (mol === m.id ? ' chip--on' : '')}
               onClick={() => { setMol(m.id); setGroup(null) }}
             >
-              {m.name}
+              {tr(m, 'name')}
             </button>
           ))}
         </div>
         <div className="spacer" />
         <button className="btn btn--ghost btn--sm" onClick={() => setSpin((s) => !s)}>
-          {spin ? '⏸ Зупинити' : '▶ Обертати'}
+          {spin ? `⏸ ${t('mol.stop')}` : `▶ ${t('mol.rotate')}`}
         </button>
       </div>
 
       <div className="mol__stage" ref={mountRef} />
 
       <div className="mol__legend">
-        <div className="filter-group__title">Підсвітити фрагмент</div>
+        <div className="filter-group__title">{t('mol.highlight')}</div>
         <div className="chips">
           {groups.map((g) => (
             <button
@@ -212,25 +214,21 @@ export default function MoleculeViewer() {
               onClick={() => setGroup(group === g.id ? null : g.id)}
             >
               <span className="mol__dot" style={{ background: g.color }} />
-              {g.title}
+              {tr(g)}
             </button>
           ))}
           {group && (
-            <button className="btn--link small" onClick={() => setGroup(null)}>Скинути</button>
+            <button className="btn--link small" onClick={() => setGroup(null)}>{t('common.reset')}</button>
           )}
         </div>
       </div>
 
       <div className="mol__note">
-        <strong>{data.title}</strong> · {data.formula}
-        <p className="small muted" style={{ margin: '6px 0 0' }}>{data.note}</p>
+        <strong>{tr(data)}</strong> · {data.formula}
+        <p className="small muted" style={{ margin: '6px 0 0' }}>{tr(data, 'note')}</p>
       </div>
 
-      <div className="mol__disclaimer tiny">
-        ⚠ Демо-геометрія: склад і звʼязність відповідають структурі, координати ідеалізовані,
-        стереохімія не відтворена, атоми водню приховані. У продакшені вантажиться SDF з
-        3D-координатами з PubChem з вичиткою медичним рецензентом.
-      </div>
+      <div className="mol__disclaimer tiny">⚠ {t('mol.disclaimer')}</div>
     </div>
   )
 }

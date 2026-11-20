@@ -1,10 +1,12 @@
 import { lazy, Suspense, useState } from 'react'
+import { useI18n } from '../i18n'
 
 // Three.js тягнеться окремим чанком і тільки після кліку користувача.
 // У головний бандл не потрапляє, LCP сторінки не чіпає.
 const MoleculeViewer = lazy(() => import('./MoleculeViewer'))
 
 function Placeholder({ onOpen }) {
+  const { t } = useI18n()
   return (
     <div className="mol-ph">
       <svg viewBox="0 0 220 120" className="mol-ph__art" aria-hidden="true">
@@ -22,18 +24,16 @@ function Placeholder({ onOpen }) {
         <circle cx="168" cy="50" r="5" fill="#44585a" />
       </svg>
       <div>
-        <h4 style={{ margin: '0 0 4px' }}>Інтерактивна 3D-модель</h4>
-        <p className="small muted" style={{ margin: '0 0 12px' }}>
-          Порівняйте просторову будову ТГК і КБД: обертайте молекулу, підсвічуйте функціональні
-          групи. Модель завантажиться за кліком (~150 КБ).
-        </p>
-        <button className="btn btn--primary btn--sm" onClick={onOpen}>Відкрити 3D-модель</button>
+        <h4 style={{ margin: '0 0 4px' }}>{t('mol.title')}</h4>
+        <p className="small muted" style={{ margin: '0 0 12px' }}>{t('mol.text')}</p>
+        <button className="btn btn--primary btn--sm" onClick={onOpen}>{t('mol.open')}</button>
       </div>
     </div>
   )
 }
 
 export default function MoleculeBlock() {
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
 
   if (!open) return <Placeholder onOpen={() => setOpen(true)} />
@@ -43,7 +43,7 @@ export default function MoleculeBlock() {
       fallback={
         <div className="mol mol--loading">
           <span className="spinner" style={{ borderTopColor: 'var(--c-green)', borderColor: 'var(--border)', borderTopWidth: 2 }} />
-          <span className="small muted">Завантажуємо 3D-рушій…</span>
+          <span className="small muted">{t('mol.loading')}</span>
         </div>
       }
     >

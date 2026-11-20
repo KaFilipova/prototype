@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore, STATUS, ROLE } from '../store/authStore'
 import { useUiStore, useConsentStore } from '../store/uiStore'
+import { useThemeStore } from '../store/themeStore'
+import { useI18n, LOCALES } from '../i18n'
 import { Field, SuccessMark } from './ui'
 import Modal from './Modal'
 import { RegisterForm, LoginForm, RecoverForm } from '../pages/auth/Auth'
@@ -9,17 +11,48 @@ import EventRegisterForm from './EventRegisterForm'
 import { EVENTS } from '../mock/data'
 
 const NAV = [
-  { to: '/basics', title: 'Основи' },
-  { to: '/faculties', title: 'Факультети' },
-  { to: '/library', title: 'Бібліотека' },
-  { to: '/events', title: 'Події' },
-  { to: '/experts', title: 'Advisory Board' },
-  { to: '/news', title: 'Новини' },
+  { to: '/basics', key: 'nav.basics' },
+  { to: '/faculties', key: 'nav.faculties' },
+  { to: '/library', key: 'nav.library' },
+  { to: '/events', key: 'nav.events' },
+  { to: '/experts', key: 'nav.board' },
+  { to: '/news', key: 'nav.news' },
 ]
+
+/* ---------- Перемикачі ---------- */
+export function LocaleSwitcher() {
+  const { locale, setLocale, t } = useI18n()
+  return (
+    <div className="switcher" role="group" aria-label={t('common.lang')}>
+      {LOCALES.map((l) => (
+        <button
+          key={l.id}
+          className={locale === l.id ? 'on' : ''}
+          onClick={() => setLocale(l.id)}
+          title={l.title}
+          aria-pressed={locale === l.id}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function ThemeToggle() {
+  const { theme, toggle } = useThemeStore()
+  const { t } = useI18n()
+  return (
+    <button className="theme-toggle" onClick={toggle} title={t('common.theme')} aria-label={t('common.theme')}>
+      <span>{theme === 'dark' ? '☀' : '☾'}</span>
+    </button>
+  )
+}
 
 function Header() {
   const { user, logout } = useAuthStore()
   const { mobileMenu, toggleMobileMenu, openAuth } = useUiStore()
+  const { t } = useI18n()
   const nav = useNavigate()
   const authed = user.status !== STATUS.GUEST
 
@@ -29,51 +62,57 @@ function Header() {
         <Link to="/" className="logo" onClick={() => toggleMobileMenu(false)}>
           <span className="logo__mark">✚</span>
           <span>
-            Академія<span style={{ color: 'var(--c-green)' }}>CannaMed</span>
+            {t('nav.academy')}<span style={{ color: 'var(--accent-text)' }}>CannaMed</span>
           </span>
         </Link>
 
         <nav className="nav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} className={({ isActive }) => (isActive ? 'active' : '')}>
-              {n.title}
+              {t(n.key)}
             </NavLink>
           ))}
         </nav>
 
         <div className="header__actions">
-          <button className="btn btn--ghost btn--sm" onClick={() => nav('/search')} aria-label="Пошук">
-            🔍 Пошук
+          <LocaleSwitcher />
+          <ThemeToggle />
+          <button className="btn btn--ghost btn--sm" onClick={() => nav('/search')}>
+            🔍 {t('common.search')}
           </button>
           {authed ? (
             <>
-              <Link to="/cabinet" className="btn btn--light btn--sm">Кабінет</Link>
-              <button className="btn btn--ghost btn--sm" onClick={() => { logout(); nav('/') }}>Вихід</button>
+              <Link to="/cabinet" className="btn btn--light btn--sm">{t('common.cabinet')}</Link>
+              <button className="btn btn--ghost btn--sm" onClick={() => { logout(); nav('/') }}>{t('common.logout')}</button>
             </>
           ) : (
             <>
-              <button className="btn btn--ghost btn--sm" onClick={() => openAuth('login')}>Вхід</button>
-              <button className="btn btn--primary btn--sm" onClick={() => openAuth('register')}>Реєстрація</button>
+              <button className="btn btn--ghost btn--sm" onClick={() => openAuth('login')}>{t('common.login')}</button>
+              <button className="btn btn--primary btn--sm" onClick={() => openAuth('register')}>{t('common.register')}</button>
             </>
           )}
-          <button className="burger" onClick={() => toggleMobileMenu()} aria-label="Меню">☰</button>
+          <button className="burger" onClick={() => toggleMobileMenu()} aria-label={t('common.menu')}>☰</button>
         </div>
       </div>
 
       {mobileMenu && (
         <div className="mobile-menu">
           {NAV.map((n) => (
-            <Link key={n.to} to={n.to} onClick={() => toggleMobileMenu(false)}>{n.title}</Link>
+            <Link key={n.to} to={n.to} onClick={() => toggleMobileMenu(false)}>{t(n.key)}</Link>
           ))}
-          <Link to="/search" onClick={() => toggleMobileMenu(false)}>Пошук</Link>
+          <Link to="/search" onClick={() => toggleMobileMenu(false)}>{t('common.search')}</Link>
           {authed ? (
-            <Link to="/cabinet" onClick={() => toggleMobileMenu(false)}>Кабінет</Link>
+            <Link to="/cabinet" onClick={() => toggleMobileMenu(false)}>{t('common.cabinet')}</Link>
           ) : (
             <>
-              <a href="#login" onClick={(e) => { e.preventDefault(); openAuth('login') }}>Вхід</a>
-              <a href="#register" onClick={(e) => { e.preventDefault(); openAuth('register') }}>Реєстрація</a>
+              <a href="#login" onClick={(e) => { e.preventDefault(); openAuth('login') }}>{t('common.login')}</a>
+              <a href="#register" onClick={(e) => { e.preventDefault(); openAuth('register') }}>{t('common.register')}</a>
             </>
           )}
+          <div className="mobile-menu__tools">
+            <LocaleSwitcher />
+            <ThemeToggle />
+          </div>
         </div>
       )}
     </header>
@@ -81,61 +120,58 @@ function Header() {
 }
 
 function Footer() {
+  const { t } = useI18n()
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer__cols">
           <div>
             <div className="logo" style={{ color: '#fff', marginBottom: 12 }}>
-              <span className="logo__mark">✚</span> Академія CannaMed
+              <span className="logo__mark">✚</span> {t('nav.academy')} CannaMed
             </div>
-            <p className="small" style={{ maxWidth: 320 }}>
-              Освітній простір про медичний канабіс для медичних фахівців. Матеріали призначені
-              виключно для професійної аудиторії.
-            </p>
+            <p className="small" style={{ maxWidth: 320 }}>{t('footer.about')}</p>
           </div>
           <div className="stack">
-            <h4>Академія</h4>
-            <Link to="/about" className="small">Про Академію</Link>
-            <Link to="/experts" className="small">Експертна рада</Link>
-            <Link to="/faculties" className="small">Факультети</Link>
-            <Link to="/library" className="small">Бібліотека</Link>
+            <h4>{t('nav.academy')}</h4>
+            <Link to="/about" className="small">{t('nav.about')}</Link>
+            <Link to="/experts" className="small">{t('nav.experts')}</Link>
+            <Link to="/faculties" className="small">{t('nav.faculties')}</Link>
+            <Link to="/library" className="small">{t('nav.library')}</Link>
           </div>
           <div className="stack">
-            <h4>Інформація</h4>
-            <Link to="/contacts" className="small">Контакти</Link>
-            <Link to="/privacy" className="small">Конфіденційність</Link>
-            <Link to="/terms" className="small">Умови участі</Link>
+            <h4>{t('nav.info')}</h4>
+            <Link to="/contacts" className="small">{t('nav.contacts')}</Link>
+            <Link to="/privacy" className="small">{t('nav.privacy')}</Link>
+            <Link to="/terms" className="small">{t('nav.terms')}</Link>
             <a href="https://cannamed.com.ua" className="small" target="_blank" rel="noreferrer">
-              Основний сайт CannaMed ↗
+              {t('nav.mainSite')} ↗
             </a>
           </div>
           <div className="stack">
-            <h4>Спільнота</h4>
-            <a href="#" className="small">Telegram-канал Академії</a>
-            <a href="#" className="small">Чат курсу «Паліативна медицина»</a>
-            <a href="#" className="small">Чат курсу «Онкологія»</a>
+            <h4>{t('nav.community')}</h4>
+            <a href="#" className="small">{t('footer.tgChannel')}</a>
+            <a href="#" className="small">{t('footer.chatPalliative')}</a>
+            <a href="#" className="small">{t('footer.chatOncology')}</a>
           </div>
         </div>
         <div className="footer__bottom">
-          <span>© 2026 Академія CannaMed. Оператор: ТОВ «КанаМед Україна», ЄДРПОУ 00000000</span>
-          <span>Контент перевірено медичними рецензентами</span>
+          <span>{t('footer.rights')}</span>
+          <span>{t('footer.reviewed')}</span>
         </div>
       </div>
     </footer>
   )
 }
 
-/* ---------- Модалка акаунтів: вхід / реєстрація / відновлення ---------- */
-const AUTH_META = {
-  login: { title: 'Вхід', subtitle: 'Увійдіть, щоб перейти до своїх курсів і збережених матеріалів.' },
-  register: { title: 'Реєстрація фахівця', subtitle: 'Доступ відкривається після перевірки документа, що підтверджує фах.' },
-  recover: { title: 'Відновлення доступу', subtitle: 'Надішлемо посилання для встановлення нового пароля.' },
-}
-
+/* ---------- Модалка акаунтів ---------- */
 function AuthModal() {
   const { authModal, openAuth, closeAuth } = useUiStore()
-  const meta = AUTH_META[authModal] || {}
+  const { t } = useI18n()
+  const meta = {
+    login: { title: t('auth.loginTitle'), subtitle: t('auth.loginLead') },
+    register: { title: t('auth.registerTitle'), subtitle: t('auth.registerLead') },
+    recover: { title: t('auth.recoverTitle'), subtitle: t('auth.recoverLead') },
+  }[authModal] || {}
 
   return (
     <Modal
@@ -156,9 +192,9 @@ function AuthModal() {
   )
 }
 
-/* ---------- Модалка реєстрації на подію ---------- */
 function EventModal() {
   const { eventModal, closeEventModal } = useUiStore()
+  const { t, tr } = useI18n()
   const event = EVENTS.find((e) => e.id === eventModal)
 
   return (
@@ -166,17 +202,17 @@ function EventModal() {
       open={Boolean(event)}
       onClose={closeEventModal}
       size="sm"
-      title="Реєстрація на подію"
-      subtitle={event?.title}
+      title={t('events.regTitle')}
+      subtitle={event ? tr(event.title) : ''}
     >
       {(close) => (event ? <EventRegisterForm event={event} onClose={close} /> : null)}
     </Modal>
   )
 }
 
-/* ---------- Інші модалки ---------- */
 function Modals() {
   const { modal, closeModal, toast } = useUiStore()
+  const { t, tr } = useI18n()
   const [sent, setSent] = useState(false)
   const type = modal?.type
 
@@ -191,56 +227,53 @@ function Modals() {
         open={type === 'report'}
         onClose={handleClose}
         size="md"
-        title="Повідомити про неточність"
-        subtitle={modal?.payload?.title}
+        title={t('modal.reportTitle')}
+        subtitle={modal?.payload?.title ? tr(modal.payload.title) : ''}
       >
         {(close) =>
           sent ? (
             <div className="center">
               <SuccessMark />
-              <h3>Дякуємо</h3>
-              <p className="small muted">Повідомлення надіслано редакції, ми перевіримо матеріал.</p>
-              <button className="btn btn--ghost" style={{ marginTop: 16 }} onClick={close}>Закрити</button>
+              <h3>{t('modal.reportThanks')}</h3>
+              <p className="small muted">{t('modal.reportSent')}</p>
+              <button className="btn btn--ghost" style={{ marginTop: 16 }} onClick={close}>{t('common.close')}</button>
             </div>
           ) : (
             <>
-              <Field label="Що саме потребує уточнення?" required>
-                <textarea className="textarea" placeholder="Опишіть неточність і, за можливості, вкажіть джерело" />
+              <Field label={t('modal.reportField')} required>
+                <textarea className="textarea" placeholder={t('modal.reportPlaceholder')} />
               </Field>
-              <Field label="Email для звʼязку (необовʼязково)">
+              <Field label={`${t('modal.reportEmail')} (${t('common.optional')})`}>
                 <input className="input" type="email" placeholder="doctor@clinic.ua" />
               </Field>
               <button
                 className="btn btn--primary btn--block"
-                onClick={() => { setSent(true); toast('Повідомлення надіслано редакції') }}
+                onClick={() => { setSent(true); toast(t('modal.reportToast')) }}
               >
-                Надіслати
+                {t('common.send')}
               </button>
             </>
           )
         }
       </Modal>
 
-      <Modal open={type === 'instruction'} onClose={handleClose} size="sm" title="Інструкцію запитано">
+      <Modal open={type === 'instruction'} onClose={handleClose} size="sm" title={t('modal.instructionTitle')}>
         {(close) => (
           <div className="center">
             <SuccessMark>📩</SuccessMark>
-            <p className="small muted">
-              Запит надіслано. Інструкція з доступу до внутрішнього факультету надійде на вашу
-              корпоративну пошту протягом робочого дня.
-            </p>
-            <button className="btn btn--primary" style={{ marginTop: 16 }} onClick={close}>Зрозуміло</button>
+            <p className="small muted">{t('modal.instructionText')}</p>
+            <button className="btn btn--primary" style={{ marginTop: 16 }} onClick={close}>{t('modal.ok')}</button>
           </div>
         )}
       </Modal>
 
-      <Modal open={type === 'calendar'} onClose={handleClose} size="sm" title="Додати в календар">
+      <Modal open={type === 'calendar'} onClose={handleClose} size="sm" title={t('modal.calendarTitle')}>
         {(close) => (
           <div className="stack">
-            <button className="btn btn--ghost btn--block" onClick={() => { toast('Відкрито Google Calendar'); close() }}>
+            <button className="btn btn--ghost btn--block" onClick={() => { toast(t('modal.googleToast')); close() }}>
               Google Calendar
             </button>
-            <button className="btn btn--ghost btn--block" onClick={() => { toast('Завантажено .ics для Outlook'); close() }}>
+            <button className="btn btn--ghost btn--block" onClick={() => { toast(t('modal.icsToast')); close() }}>
               Outlook / .ics
             </button>
           </div>
@@ -252,6 +285,7 @@ function Modals() {
 
 function CookieBanner() {
   const { decided, acceptAll, acceptNecessary, save } = useConsentStore()
+  const { t } = useI18n()
   const [settings, setSettings] = useState(false)
   const [analytics, setAnalytics] = useState(true)
   const [marketing, setMarketing] = useState(false)
@@ -262,24 +296,24 @@ function CookieBanner() {
       {!settings ? (
         <>
           <div className="small">
-            <strong>Ми використовуємо cookie.</strong> Необхідні — для роботи сайту, аналітичні — для
-            покращення матеріалів. Детальніше в <Link to="/privacy" style={{ color: 'var(--c-green)' }}>Політиці конфіденційності</Link>.
+            <strong>{t('cookie.title')}</strong> {t('cookie.text')}{' '}
+            <Link to="/privacy" style={{ color: 'var(--accent-text)' }}>{t('cookie.policy')}</Link>.
           </div>
           <div className="row" style={{ flexWrap: 'nowrap' }}>
-            <button className="btn btn--ghost btn--sm" onClick={() => setSettings(true)}>Налаштувати</button>
-            <button className="btn btn--ghost btn--sm" onClick={acceptNecessary}>Лише необхідні</button>
-            <button className="btn btn--primary btn--sm" onClick={acceptAll}>Прийняти всі</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => setSettings(true)}>{t('cookie.settings')}</button>
+            <button className="btn btn--ghost btn--sm" onClick={acceptNecessary}>{t('cookie.necessary')}</button>
+            <button className="btn btn--primary btn--sm" onClick={acceptAll}>{t('cookie.acceptAll')}</button>
           </div>
         </>
       ) : (
         <div style={{ width: '100%' }}>
-          <strong>Налаштування згоди</strong>
+          <strong>{t('cookie.settingsTitle')}</strong>
           <div className="stack" style={{ margin: '12px 0' }}>
-            <label className="checkbox"><input type="checkbox" checked disabled /> Необхідні (завжди активні)</label>
-            <label className="checkbox"><input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} /> Аналітичні (GA4)</label>
-            <label className="checkbox"><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} /> Маркетингові</label>
+            <label className="checkbox"><input type="checkbox" checked disabled /> {t('cookie.necessaryAlways')}</label>
+            <label className="checkbox"><input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} /> {t('cookie.analytics')}</label>
+            <label className="checkbox"><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} /> {t('cookie.marketing')}</label>
           </div>
-          <button className="btn btn--primary btn--sm" onClick={() => save(analytics, marketing)}>Зберегти вибір</button>
+          <button className="btn btn--primary btn--sm" onClick={() => save(analytics, marketing)}>{t('cookie.saveChoice')}</button>
         </div>
       )}
     </div>
@@ -300,18 +334,9 @@ function Toasts() {
 function SpecNote() {
   const { pathname } = useLocation()
   const map = {
-    '/': 'Figma 01 · Головна',
-    '/basics': 'Figma 02 · Основи',
-    '/faculties': 'Figma 03 · Факультети',
-    '/library': 'Figma 04 · Бібліотека',
-    '/events': 'Figma 05 · Події',
-    '/news': 'Figma 06 · Новини',
-    '/about': 'Figma 07 · Про Академію',
-    '/experts': 'Figma 08 · Експертна рада',
-    '/contacts': 'Figma 09 · Контакти',
-    '/register': 'Figma 10 · Реєстрація',
-    '/cabinet': 'Figma 11 · Кабінет',
-    '/search': 'Figma S · Пошук',
+    '/': 'Figma 01', '/basics': 'Figma 02', '/faculties': 'Figma 03', '/library': 'Figma 04',
+    '/events': 'Figma 05', '/news': 'Figma 06', '/about': 'Figma 07', '/experts': 'Figma 08',
+    '/contacts': 'Figma 09', '/register': 'Figma 10', '/cabinet': 'Figma 11', '/search': 'Figma S',
   }
   const label = map[pathname]
   if (!label) return null
@@ -320,17 +345,20 @@ function SpecNote() {
 
 export default function Layout() {
   const { user } = useAuthStore()
+  const { t } = useI18n()
+  const initTheme = useThemeStore((s) => s.init)
   const { pathname } = useLocation()
+
+  useEffect(() => { initTheme() }, [initTheme])
 
   return (
     <>
       <Header />
       {user.role === ROLE.REP && user.status === STATUS.APPROVED && (
         <div style={{ background: 'var(--c-deep)', color: '#fff', textAlign: 'center', padding: '6px 0', fontSize: 13 }}>
-          Внутрішній доступ Укрфарму активний
+          {t('cabinet.internalActive')}
         </div>
       )}
-      {/* key на маршруті перезапускає анімацію появи сторінки */}
       <main key={pathname} className="page-enter">
         <Outlet />
       </main>

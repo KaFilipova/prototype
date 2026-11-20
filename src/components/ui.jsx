@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useLocaleStore, useI18n } from '../i18n'
 
 /* ===== Анімація появи при скролі ===== */
 export function Reveal({ children, delay = 0, as: Tag = 'div', className = '', ...rest }) {
@@ -190,10 +191,10 @@ export function Pagination({ pages = 3, current = 1, onChange = () => {} }) {
 }
 
 export function Disclaimer() {
+  const { t } = useI18n()
   return (
     <div className="disclaimer">
-      <strong>Матеріал для медичних фахівців.</strong> Інформація не є рекламою лікарського засобу
-      та не замінює клінічного судження лікаря. Текст дисклеймера редагується в CMS.
+      <strong>{t('disclaimer.title')}</strong> {t('disclaimer.text')}
     </div>
   )
 }
@@ -210,10 +211,39 @@ export function QrBlock({ label = 'Стабільне посилання для 
   )
 }
 
-export const fmtDate = (iso) => {
-  const months = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня']
-  const d = new Date(iso)
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+const MONTHS = {
+  uk: ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'],
+  en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
 }
 
-export const FORMAT_LABEL = { online: 'Онлайн', offline: 'Офлайн', hybrid: 'Гібрид' }
+/** Дата в локалі користувача. Локаль читаємо зі стора, щоб не тягнути її в кожен виклик. */
+export const fmtDate = (iso) => {
+  const locale = useLocaleStore.getState().locale
+  const d = new Date(iso)
+  const m = MONTHS[locale] || MONTHS.uk
+  return locale === 'en'
+    ? `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`
+    : `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`
+}
+
+export const fmtMonth = (iso) => {
+  const locale = useLocaleStore.getState().locale
+  return (MONTHS[locale] || MONTHS.uk)[new Date(iso).getMonth()]
+}
+
+const FORMATS = {
+  uk: { online: 'Онлайн', offline: 'Офлайн', hybrid: 'Гібрид' },
+  en: { online: 'Online', offline: 'In person', hybrid: 'Hybrid' },
+}
+
+export const fmtFormat = (f) => {
+  const locale = useLocaleStore.getState().locale
+  return (FORMATS[locale] || FORMATS.uk)[f] ?? f
+}
+
+/** Позначка «переклад готується» — показує реальну поведінку фолбеку CMS */
+export function TrNote() {
+  const { t, locale } = useI18n()
+  if (locale === 'uk') return null
+  return <span className="i18n-note" title={t('fallback')}>UK</span>
+}

@@ -7,6 +7,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Виставляємо тему і мову ДО першого рендера, інакше буде спалах світлої теми
+      (function () {
+        try {
+          var t = JSON.parse(localStorage.getItem('cannamed-theme') || '{}')?.state?.theme
+          if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          document.documentElement.setAttribute('data-theme', t)
+          document.documentElement.style.colorScheme = t
+          var l = JSON.parse(localStorage.getItem('cannamed-locale') || '{}')?.state?.locale
+          if (l) document.documentElement.lang = l
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,88 +1,89 @@
 import { Link } from 'react-router-dom'
 import { Crumbs, PageHead } from '../components/ui'
+import { useI18n } from '../i18n'
 
 const GROUPS = [
   {
-    title: 'Публічні сторінки',
+    key: 'map.public',
     items: [
-      { to: '/', title: 'Головна', f: 'F-01…F-07' },
-      { to: '/basics', title: 'Основи', f: 'F-08' },
-      { to: '/faculties', title: 'Факультети — список', f: 'F-09' },
-      { to: '/faculties/palliative', title: 'Клінічний факультет', f: 'F-10' },
-      { to: '/faculties/ukrfarm', title: 'Внутрішній факультет', f: 'F-11' },
-      { to: '/library', title: 'Бібліотека — каталог', f: 'F-12' },
-      { to: '/library/m1', title: 'Сторінка матеріалу', f: 'F-13, F-14, F-15' },
-      { to: '/library/m4', title: '3D-модель ТГК/КБД (опція)', f: 'опція, 16–24 год' },
-      { to: '/events', title: 'Афіша подій', f: 'F-17' },
-      { to: '/events/e1', title: 'Сторінка події + реєстрація', f: 'F-18, F-19' },
-      { to: '/news', title: 'Стрічка новин', f: 'F-21' },
-      { to: '/news/n1', title: 'Сторінка новини', f: 'F-22' },
-      { to: '/about', title: 'Про Академію + FAQ', f: 'F-24' },
-      { to: '/experts', title: 'Експертна рада', f: 'F-25' },
-      { to: '/experts/x1', title: 'Профіль експерта', f: 'F-25' },
-      { to: '/contacts', title: 'Контакти', f: 'F-26' },
-      { to: '/search', title: 'Пошук по сайту', f: 'F-27' },
-      { to: '/privacy', title: 'Конфіденційність', f: 'F-28' },
-      { to: '/terms', title: 'Умови участі', f: 'F-28' },
-      { to: '/404-demo', title: 'Сторінка 404', f: 'F-29' },
+      { to: '/', uk: 'Головна', en: 'Home', f: 'F-01…F-07' },
+      { to: '/basics', uk: 'Основи', en: 'Basics', f: 'F-08' },
+      { to: '/faculties', uk: 'Факультети — список', en: 'Faculties — list', f: 'F-09' },
+      { to: '/faculties/palliative', uk: 'Клінічний факультет', en: 'Clinical faculty', f: 'F-10' },
+      { to: '/faculties/ukrfarm', uk: 'Внутрішній факультет', en: 'Internal faculty', f: 'F-11' },
+      { to: '/library', uk: 'Бібліотека — каталог', en: 'Library — catalogue', f: 'F-12' },
+      { to: '/library/m1', uk: 'Сторінка матеріалу', en: 'Material page', f: 'F-13, F-14, F-15' },
+      { to: '/library/m4', uk: '3D-модель ТГК/КБД (опція)', en: 'THC/CBD 3D model (option)', f: '16–24 h' },
+      { to: '/events', uk: 'Афіша подій', en: 'Events listing', f: 'F-17' },
+      { to: '/events/e1', uk: 'Сторінка події + реєстрація', en: 'Event page + registration', f: 'F-18, F-19' },
+      { to: '/news', uk: 'Стрічка новин', en: 'News feed', f: 'F-21' },
+      { to: '/news/n1', uk: 'Сторінка новини', en: 'News article', f: 'F-22' },
+      { to: '/about', uk: 'Про Академію + FAQ', en: 'About + FAQ', f: 'F-24' },
+      { to: '/experts', uk: 'Експертна рада', en: 'Advisory Board', f: 'F-25' },
+      { to: '/experts/x1', uk: 'Профіль експерта', en: 'Expert profile', f: 'F-25' },
+      { to: '/contacts', uk: 'Контакти', en: 'Contact', f: 'F-26' },
+      { to: '/search', uk: 'Пошук по сайту', en: 'Site search', f: 'F-27' },
+      { to: '/privacy', uk: 'Конфіденційність', en: 'Privacy', f: 'F-28' },
+      { to: '/terms', uk: 'Умови участі', en: 'Terms', f: 'F-28' },
+      { to: '/404-demo', uk: 'Сторінка 404', en: '404 page', f: 'F-29' },
     ],
   },
   {
-    title: 'Акаунти',
+    key: 'map.accounts',
     items: [
-      { to: '/register', title: 'Реєстрація (3 кроки)', f: 'F-32' },
-      { to: '/login', title: 'Вхід + демо-ролі', f: 'F-34, F-38' },
-      { to: '/recover', title: 'Відновлення доступу', f: 'F-34' },
+      { to: '/register', uk: 'Реєстрація (3 кроки)', en: 'Registration (3 steps)', f: 'F-32' },
+      { to: '/login', uk: 'Вхід + демо-ролі', en: 'Sign in + demo roles', f: 'F-34, F-38' },
+      { to: '/recover', uk: 'Відновлення доступу', en: 'Password reset', f: 'F-34' },
     ],
   },
   {
-    title: 'Кабінет і навчання',
+    key: 'map.cabinet',
     items: [
-      { to: '/cabinet', title: 'Кабінет (4 вкладки)', f: 'F-39, F-15' },
-      { to: '/cabinet/course', title: 'Огляд курсу + питання експерту', f: 'F-41, F-46, F-53' },
-      { to: '/cabinet/lesson', title: 'Заняття: відео / аудіо / PDF / тест', f: 'F-42, F-44, F-45, F-47' },
+      { to: '/cabinet', uk: 'Кабінет (4 вкладки)', en: 'Account (4 tabs)', f: 'F-39, F-15' },
+      { to: '/cabinet/course', uk: 'Огляд курсу + питання експерту', en: 'Course overview + ask an expert', f: 'F-41, F-46, F-53' },
+      { to: '/cabinet/lesson', uk: 'Заняття: відео / аудіо / PDF / тест', en: 'Lesson: video / audio / PDF / test', f: 'F-42, F-44, F-45, F-47' },
     ],
   },
   {
-    title: 'Адміністрування',
-    items: [{ to: '/admin', title: 'Заявки, вхідні, CMS', f: 'F-35, F-59, F-60' }],
+    key: 'map.admin',
+    items: [{ to: '/admin', uk: 'Заявки, вхідні, CMS', en: 'Applications, inbox, CMS', f: 'F-35, F-59, F-60' }],
   },
 ]
 
 const STATES = [
-  'Порожня бібліотека (скиньте фільтри → задайте неіснуючий запит)',
-  'Порожні події (фільтр «Архів» + напрям без подій)',
-  'Пошук: початковий і порожній стани',
-  'Групи результатів пошуку',
-  'Календар подій (перемикач «Календар» в афіші)',
-  'Підтвердження участі в події',
-  'Звернення надіслано (Контакти)',
-  'Обовʼязкові поля / помилки валідації (будь-яка форма без даних)',
-  'Очікує підтвердження (реєстрація → кабінет)',
-  'Внутрішній доступ / закриті матеріали (факультет Укрфарму)',
-  'Інструкцію запитано (кнопка «Звернутися»)',
-  'Збережені матеріали — порожньо і заповнено',
-  'Cookie-банер з налаштуванням згоди',
-  'Модальне «Повідомити про неточність»',
+  { uk: 'Порожня бібліотека (неіснуючий запит у фільтрі)', en: 'Empty library (non-existent keyword)' },
+  { uk: 'Порожні події (фільтр «Архів» + напрям без подій)', en: 'Empty events (Archive + a track with none)' },
+  { uk: 'Пошук: початковий і порожній стани', en: 'Search: initial and empty states' },
+  { uk: 'Групи результатів пошуку', en: 'Grouped search results' },
+  { uk: 'Календар подій', en: 'Events calendar view' },
+  { uk: 'Підтвердження участі в події', en: 'Event registration confirmed' },
+  { uk: 'Звернення надіслано (Контакти)', en: 'Enquiry sent (Contact)' },
+  { uk: 'Обовʼязкові поля / помилки валідації', en: 'Required fields / validation errors' },
+  { uk: 'Очікує підтвердження (реєстрація → кабінет)', en: 'Awaiting approval (registration → account)' },
+  { uk: 'Внутрішній доступ / закриті матеріали', en: 'Internal access / restricted materials' },
+  { uk: 'Інструкцію запитано', en: 'Instructions requested' },
+  { uk: 'Збережені матеріали — порожньо і заповнено', en: 'Saved materials — empty and filled' },
+  { uk: 'Cookie-банер з налаштуванням згоди', en: 'Cookie banner with consent settings' },
+  { uk: 'Модальне «Повідомити про неточність»', en: '“Report an inaccuracy” modal' },
 ]
 
 export default function MapPage() {
+  const { t, locale } = useI18n()
+  const L = (o) => o[locale] ?? o.uk
+
   return (
     <>
-      <Crumbs items={[{ title: 'Головна', to: '/' }, { title: 'Карта прототипу' }]} />
-      <PageHead
-        title="Карта прототипу"
-        subtitle="Усі екрани та стани прототипу з привʼязкою до ID фіч з таблиці оцінки v3."
-      />
+      <Crumbs items={[{ title: t('common.home'), to: '/' }, { title: t('map.title') }]} />
+      <PageHead title={t('map.title')} subtitle={t('map.lead')} />
       <section className="section">
         <div className="container">
           {GROUPS.map((g) => (
-            <div key={g.title} style={{ marginBottom: 40 }}>
-              <h2>{g.title}</h2>
+            <div key={g.key} style={{ marginBottom: 40 }}>
+              <h2>{t(g.key)}</h2>
               <div className="grid grid--3" style={{ marginTop: 16 }}>
                 {g.items.map((i) => (
                   <Link to={i.to} key={i.to} className="card card--link">
-                    <h3 className="card__title">{i.title}</h3>
+                    <h3 className="card__title">{L(i)}</h3>
                     <span className="badge badge--neutral">{i.f}</span>
                   </Link>
                 ))}
@@ -90,13 +91,13 @@ export default function MapPage() {
             </div>
           ))}
 
-          <h2>Стани (S01–S14)</h2>
+          <h2>{t('map.states')}</h2>
           <div className="grid grid--2" style={{ marginTop: 16 }}>
             {STATES.map((s, i) => (
-              <div className="card" key={s}>
+              <div className="card" key={s.uk}>
                 <div className="row" style={{ alignItems: 'flex-start', flexWrap: 'nowrap' }}>
                   <span className="acc__num">{i + 1}</span>
-                  <span className="small">{s}</span>
+                  <span className="small">{L(s)}</span>
                 </div>
               </div>
             ))}

@@ -1,45 +1,47 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { MATERIALS, SPECIALTIES, MATERIAL_TYPES, TOPICS } from '../mock/data'
-import { Crumbs, PageHead, Empty, Notice, Disclaimer, QrBlock, Reveal, SkeletonCard, fmtDate } from '../components/ui'
+import {
+  Crumbs, PageHead, Empty, Notice, Disclaimer, QrBlock, Reveal, SkeletonCard, TrNote, fmtDate,
+} from '../components/ui'
 import MoleculeBlock from '../components/MoleculeBlock'
 import { useLibraryStore } from '../store/contentStore'
 import { useAuthStore, STATUS } from '../store/authStore'
 import { useUiStore } from '../store/uiStore'
+import { useI18n } from '../i18n'
 
-const TYPE_LABEL = Object.fromEntries(MATERIAL_TYPES.map((t) => [t.id, t.title]))
-
-function SaveButton({ id, small }) {
+function SaveButton({ id }) {
   const { isSaved, toggleSaved } = useLibraryStore()
   const { user } = useAuthStore()
   const { toast } = useUiStore()
+  const { t } = useI18n()
   const saved = isSaved(id)
 
   const onClick = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    if (user.status === STATUS.GUEST) return toast('Увійдіть, щоб зберігати матеріали')
+    if (user.status === STATUS.GUEST) return toast(t('library.guestSave'))
     toggleSaved(id)
-    toast(saved ? 'Матеріал видалено зі збережених' : 'Матеріал збережено в кабінеті')
+    toast(saved ? t('library.unsaveToast') : t('library.saveToast'))
   }
 
   return (
     <button className={'btn btn--sm ' + (saved ? 'btn--light' : 'btn--ghost')} onClick={onClick}>
-      {saved ? '★ Збережено' : '☆ Зберегти'}
+      {saved ? `★ ${t('library.saved')}` : `☆ ${t('library.save')}`}
     </button>
   )
 }
 
 export function LibraryList() {
+  const { t, tr } = useI18n()
   const { filters, setQuery, toggleFilter, setSort, resetFilters, results, activeCount } = useLibraryStore()
   const list = results()
 
-  // Імітація підвантаження: показує скелетони так само, як це буде з реальним API
   const [loading, setLoading] = useState(false)
   useEffect(() => {
     setLoading(true)
-    const t = setTimeout(() => setLoading(false), 320)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setLoading(false), 320)
+    return () => clearTimeout(timer)
   }, [filters])
 
   const Group = ({ title, group, options }) => (
@@ -52,7 +54,7 @@ export function LibraryList() {
             className={'chip' + (filters[group].includes(o.id) ? ' chip--on' : '')}
             onClick={() => toggleFilter(group, o.id)}
           >
-            {o.title}
+            {tr(o)}
           </button>
         ))}
       </div>
@@ -61,39 +63,40 @@ export function LibraryList() {
 
   return (
     <>
-      <Crumbs items={[{ title: 'Головна', to: '/' }, { title: 'Бібліотека' }]} />
-      <PageHead
-        title="Бібліотека"
-        subtitle="Статті, клінічні настанови, відео, аудіо, конспекти та записи Q&A. Усі матеріали проходять медичне рецензування."
-      />
+      <Crumbs items={[{ title: t('common.home'), to: '/' }, { title: t('library.title') }]} />
+      <PageHead title={t('library.title')} subtitle={t('library.lead')} />
 
       <section className="section">
         <div className="container grid grid--sidebar">
           <aside className="filters">
             <h4>
-              Фільтри
-              {activeCount() > 0 && <button className="btn--link small" onClick={resetFilters}>Скинути ({activeCount()})</button>}
+              {t('library.filters')}
+              {activeCount() > 0 && (
+                <button className="btn--link small" onClick={resetFilters}>
+                  {t('common.reset')} ({activeCount()})
+                </button>
+              )}
             </h4>
             <input
               className="input"
-              placeholder="Ключове слово"
+              placeholder={t('library.keyword')}
               value={filters.q}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <Group title="Спеціальність" group="specialties" options={SPECIALTIES} />
-            <Group title="Тип матеріалу" group="types" options={MATERIAL_TYPES} />
-            <Group title="Показання / тема" group="topics" options={TOPICS} />
+            <Group title={t('library.specialty')} group="specialties" options={SPECIALTIES} />
+            <Group title={t('library.type')} group="types" options={MATERIAL_TYPES} />
+            <Group title={t('library.topic')} group="topics" options={TOPICS} />
           </aside>
 
           <div>
             <div className="row" style={{ marginBottom: 16 }}>
-              <span className="muted small">Знайдено: {list.length}</span>
+              <span className="muted small">{t('common.found')}: {list.length}</span>
               <div className="spacer" />
-              <label className="small muted">Сортування</label>
+              <label className="small muted">{t('common.sort')}</label>
               <select className="select" style={{ width: 'auto' }} value={filters.sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="date">За датою перевірки</option>
-                <option value="title">За назвою</option>
-                <option value="read">За часом читання</option>
+                <option value="date">{t('library.sortDate')}</option>
+                <option value="title">{t('library.sortTitle')}</option>
+                <option value="read">{t('library.sortRead')}</option>
               </select>
             </div>
 
@@ -104,36 +107,38 @@ export function LibraryList() {
             ) : list.length === 0 ? (
               <Empty
                 icon="📭"
-                title="Нічого не знайдено"
-                text="Спробуйте змінити ключове слово або зняти частину фільтрів."
-                action={<button className="btn btn--primary" onClick={resetFilters}>Скинути фільтри</button>}
+                title={t('library.emptyTitle')}
+                text={t('library.emptyText')}
+                action={<button className="btn btn--primary" onClick={resetFilters}>{t('library.resetFilters')}</button>}
               />
             ) : (
               <div className="grid grid--2">
-                {list.map((m, i) => (
-                  <Reveal key={m.id} delay={Math.min(i + 1, 5)} className="card card--link">
-                    <div className="row" style={{ marginBottom: 10 }}>
-                      <span className="badge">{TYPE_LABEL[m.type]}</span>
-                      <div className="spacer" />
-                      <SaveButton id={m.id} />
-                    </div>
-                    <Link to={`/library/${m.id}`}>
-                      <h3 className="card__title">{m.title}</h3>
-                      <p className="small muted">{m.excerpt}</p>
-                      <div className="card__meta">
-                        <span>{m.readTime} хв</span>
-                        <span>Перевірено {fmtDate(m.reviewedAt)}</span>
+                {list.map((m, i) => {
+                  const type = MATERIAL_TYPES.find((x) => x.id === m.type)
+                  return (
+                    <Reveal key={m.id} delay={Math.min(i + 1, 5)} className="card card--link">
+                      <div className="row" style={{ marginBottom: 10 }}>
+                        <span className="badge">{tr(type)}</span>
+                        <div className="spacer" />
+                        <SaveButton id={m.id} />
                       </div>
-                    </Link>
-                  </Reveal>
-                ))}
+                      <Link to={`/library/${m.id}`}>
+                        <h3 className="card__title">{tr(m)}</h3>
+                        <p className="small muted">{tr(m, 'excerpt')}</p>
+                        <div className="card__meta">
+                          <span>{m.readTime} {t('common.min')}</span>
+                          <span>{t('library.reviewedAt')} {fmtDate(m.reviewedAt)}</span>
+                        </div>
+                      </Link>
+                    </Reveal>
+                  )
+                })}
               </div>
             )}
 
             <div style={{ marginTop: 32 }}>
-              <Notice kind="ok" icon="✅" title="Перевірка й актуальність">
-                Кожен матеріал має автора, медичного рецензента та дату перевірки. Матеріали
-                переглядаються щонайменше раз на 12 місяців. Знайшли неточність — повідомте редакції.
+              <Notice kind="ok" icon="✅" title={t('library.checkTitle')}>
+                {t('library.checkText')}
               </Notice>
             </div>
           </div>
@@ -145,70 +150,64 @@ export function LibraryList() {
 
 export function MaterialPage() {
   const { id } = useParams()
-  const m = MATERIALS.find((x) => x.id === id)
+  const { t, tr, hasTr } = useI18n()
   const openModal = useUiStore((s) => s.openModal)
-  if (!m) return <Empty title="Матеріал не знайдено" />
+  const m = MATERIALS.find((x) => x.id === id)
+  if (!m) return <Empty title={t('library.notFound')} />
 
-  const related = MATERIALS.filter((x) => x.id !== m.id && x.topics.some((t) => m.topics.includes(t))).slice(0, 3)
+  const type = MATERIAL_TYPES.find((x) => x.id === m.type)
+  const related = MATERIALS.filter((x) => x.id !== m.id && x.topics.some((topic) => m.topics.includes(topic))).slice(0, 3)
 
   return (
     <>
-      <Crumbs items={[{ title: 'Головна', to: '/' }, { title: 'Бібліотека', to: '/library' }, { title: m.title }]} />
+      <Crumbs items={[
+        { title: t('common.home'), to: '/' },
+        { title: t('library.title'), to: '/library' },
+        { title: tr(m) },
+      ]} />
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container grid" style={{ gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'start' }}>
           <article className="prose">
             <div className="row" style={{ marginBottom: 12 }}>
-              <span className="badge">{TYPE_LABEL[m.type]}</span>
+              <span className="badge">{tr(type)}</span>
               {m.specialties.map((s) => (
-                <span className="badge badge--neutral" key={s}>{SPECIALTIES.find((x) => x.id === s)?.title}</span>
+                <span className="badge badge--neutral" key={s}>{tr(SPECIALTIES.find((x) => x.id === s))}</span>
               ))}
+              {!hasTr(m) && <TrNote />}
             </div>
-            <h1>{m.title}</h1>
-            <p className="muted" style={{ fontSize: 18 }}>{m.excerpt}</p>
+            <h1>{tr(m)}</h1>
+            <p className="muted" style={{ fontSize: 18 }}>{tr(m, 'excerpt')}</p>
 
             <Disclaimer />
 
-            <h2>Основний матеріал</h2>
-            <p>
-              Клінічне застосування канабіноїдів вимагає індивідуального підходу до кожного пацієнта.
-              Нижче наведено практичні рекомендації, сформовані експертною радою Академії на основі
-              чинних міжнародних настанов та законодавства України.
-            </p>
-            <ul>
-              <li>Оцінка пацієнта: анамнез, супутня терапія, червоні прапорці.</li>
-              <li>Вибір форми та шляху введення залежно від клінічної мети.</li>
-              <li>Стартова доза, крок титрування і контрольні точки оцінки ефекту.</li>
-              <li>Моніторинг побічних явищ та критерії перегляду схеми.</li>
-            </ul>
-            <p>
-              Повний текст матеріалу редагується в CMS і може містити таблиці, зображення та
-              вбудовані відеофрагменти.
-            </p>
+            <h2>{t('library.body')}</h2>
+            <p>{t('library.bodyText')}</p>
+            <ul>{t('library.bodyList').map((li) => <li key={li}>{li}</li>)}</ul>
+            <p>{t('library.bodyCms')}</p>
 
-            {/* Інтерактивний блок підключається до матеріалів з відповідною темою */}
             {(m.topics.includes('pharm') || m.topics.includes('ecs')) && (
               <>
-                <h2>Просторова будова</h2>
+                <h2>{t('library.structure')}</h2>
                 <MoleculeBlock />
               </>
             )}
 
             {m.sources.length > 0 && (
               <>
-                <h2>Джерела</h2>
+                <h2>{t('library.sources')}</h2>
                 <ul>{m.sources.map((s) => <li key={s}>{s}</li>)}</ul>
               </>
             )}
 
             {related.length > 0 && (
               <>
-                <h2>Повʼязані матеріали</h2>
+                <h2>{t('library.related')}</h2>
                 <div className="grid grid--3">
                   {related.map((r) => (
                     <Link to={`/library/${r.id}`} key={r.id} className="card card--link">
-                      <span className="badge badge--neutral">{TYPE_LABEL[r.type]}</span>
-                      <h3 className="card__title" style={{ marginTop: 8, fontSize: 15 }}>{r.title}</h3>
+                      <span className="badge badge--neutral">{tr(MATERIAL_TYPES.find((x) => x.id === r.type))}</span>
+                      <h3 className="card__title" style={{ marginTop: 8, fontSize: 15 }}>{tr(r)}</h3>
                     </Link>
                   ))}
                 </div>
@@ -218,12 +217,12 @@ export function MaterialPage() {
 
           <aside className="stack" style={{ position: 'sticky', top: 'calc(var(--header-h) + 16px)' }}>
             <div className="card">
-              <h4>Перевірка й актуальність</h4>
+              <h4>{t('library.checkTitle')}</h4>
               <dl className="kv">
-                <dt>Автор</dt><dd>{m.author}</dd>
-                <dt>Медичний рецензент</dt><dd>{m.reviewer}</dd>
-                <dt>Дата перевірки</dt><dd>{fmtDate(m.reviewedAt)}</dd>
-                <dt>Час опрацювання</dt><dd>{m.readTime} хв</dd>
+                <dt>{t('library.author')}</dt><dd>{m.author}</dd>
+                <dt>{t('library.reviewer')}</dt><dd>{m.reviewer}</dd>
+                <dt>{t('library.reviewDate')}</dt><dd>{fmtDate(m.reviewedAt)}</dd>
+                <dt>{t('library.readTime')}</dt><dd>{m.readTime} {t('common.min')}</dd>
               </dl>
             </div>
 
@@ -231,7 +230,7 @@ export function MaterialPage() {
               <SaveButton id={m.id} />
               {m.files.length > 0 && (
                 <>
-                  <div className="filter-group__title" style={{ marginTop: 8 }}>Файли</div>
+                  <div className="filter-group__title" style={{ marginTop: 8 }}>{t('library.files')}</div>
                   {m.files.map((f) => (
                     <button key={f.name} className="btn btn--ghost btn--sm btn--block" style={{ justifyContent: 'space-between' }}>
                       <span>⬇ {f.name}</span>
@@ -240,12 +239,12 @@ export function MaterialPage() {
                   ))}
                 </>
               )}
-              <button className="btn--link small" onClick={() => openModal('report', { title: m.title })}>
-                Повідомити про неточність
+              <button className="btn--link small" onClick={() => openModal('report', { title: m })}>
+                {t('library.report')}
               </button>
             </div>
 
-            <QrBlock label="QR-посилання на матеріал" />
+            <QrBlock label="QR" />
           </aside>
         </div>
       </section>

@@ -219,3 +219,41 @@ export const FAQ = [
 
 export const SAVED_IDS = ['m1', 'm8']
 export const MY_EVENT_IDS = ['e1']
+
+/* ==========================================================================
+   Прикріплення англійських версій записів.
+   У проді це робить CMS: окремий локалізований запис з фолбеком на основну мову.
+   ========================================================================== */
+import { EN } from './data.en.js'
+
+const attach = (list, keyFn = (o) => o.id) =>
+  list.forEach((o) => {
+    const tr = EN[keyFn(o)]
+    if (tr) o.en = tr
+  })
+
+attach(SPECIALTIES)
+attach(MATERIAL_TYPES)
+attach(TOPICS)
+attach(MATERIALS)
+attach(EVENTS)
+attach(NEWS)
+attach(EXPERTS)
+attach(FACULTIES, (f) => `fac-${f.id}`)
+attach(BASICS, (b) => `b-${b.id}`)
+
+COUNTERS.forEach((c, i) => { c.en = EN[`cnt-${i}`] })
+FAQ.forEach((f, i) => { f.en = EN[`faq-${i}`] })
+
+COURSE.en = EN['course-palliative']
+COURSE.modules.forEach((m) => { m.en = EN[`mod-${m.id}`] })
+
+LESSON.en = EN.lesson
+LESSON.video.chapters.forEach((c, i) => { c.en = EN[`ch-${i}`] })
+
+TEST_QUESTIONS.forEach((q) => {
+  const tr = EN[`q-${q.id}`]
+  if (!tr) return
+  q.en = { text: tr.text, explanation: tr.explanation }
+  q.options.forEach((o, i) => { o.en = { text: tr.options[i] } })
+})
